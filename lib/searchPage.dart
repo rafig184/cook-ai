@@ -8,6 +8,7 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:social_share/social_share.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -119,17 +120,21 @@ class _SearchPageState extends State<SearchPage> {
         instructions: instructions);
 
     setState(() {
-      db.addFavorite(favorite);
-      isLoadingSnackBar = true;
+      if (db.isFavorite(id)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Recipe is already in favorites.."),
+          ),
+        );
+      } else {
+        db.addFavorite(favorite);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Added to favorites.."),
+          ),
+        );
+      }
     });
-
-    if (isLoadingSnackBar) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Added to favorites.."),
-        ),
-      );
-    }
 
     // Print each FavoriteData instance in a readable format
     for (var favorite in db.favoriteRecipes) {
@@ -150,7 +155,7 @@ class _SearchPageState extends State<SearchPage> {
               style: GoogleFonts.openSans(
                 textStyle: const TextStyle(
                   fontSize: 18.0,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w400,
                   color: Colors.blueGrey,
                 ),
               ),
@@ -229,6 +234,15 @@ class _SearchPageState extends State<SearchPage> {
                                   itemCount: resultAI.length,
                                   itemBuilder: (context, index) {
                                     final recipe = resultAI[index];
+                                    var recipeName = recipe['name'].toString();
+                                    var recipeDescription =
+                                        recipe['description'].toString();
+                                    var recipeIngredients =
+                                        recipe['ingredients'].toString();
+                                    var recipeInstructions =
+                                        recipe['instructions'].toString();
+                                    var stringRecipe =
+                                        "$recipeName, $recipeDescription Ingredients : $recipeIngredients, Instructions : $recipeInstructions";
                                     return Stack(children: [
                                       Card(
                                         margin: const EdgeInsets.all(10.0),
@@ -272,23 +286,61 @@ class _SearchPageState extends State<SearchPage> {
                                                       (instruction) =>
                                                           Text(instruction)) ??
                                                   [],
+                                              const SizedBox(height: 10),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      SocialShare.shareOptions(
+                                                          stringRecipe);
+                                                    },
+                                                    child: const Column(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.share,
+                                                          color: Colors.grey,
+                                                        ),
+                                                        Text("Share")
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      SocialShare
+                                                          .copyToClipboard(
+                                                              text:
+                                                                  stringRecipe);
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                              const SnackBar(
+                                                        content: Text(
+                                                            "Copied to Clipboard.."),
+                                                      ));
+                                                    },
+                                                    child: const Column(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.copy,
+                                                          color: Colors.grey,
+                                                        ),
+                                                        Text("Copy")
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              )
                                             ],
                                           ),
                                         ),
                                       ),
                                       Positioned(
-                                          top: 20,
-                                          right: 20,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              print(resultAI[index]['id']);
-                                              print(resultAI[index]['name']);
-                                              print(resultAI[index]
-                                                  ['description']);
-                                              print(resultAI[index]
-                                                  ['ingredients']);
-                                              print(resultAI[index]
-                                                  ['instructions']);
+                                          top: 15,
+                                          right: 8,
+                                          child: TextButton(
+                                            onPressed: () {
                                               addToFavorite(
                                                 resultAI[index]['id'],
                                                 resultAI[index]['name'],
@@ -300,6 +352,7 @@ class _SearchPageState extends State<SearchPage> {
                                               );
                                             },
                                             child: const Icon(
+                                              size: 30,
                                               Icons.star,
                                               color: Color.fromARGB(
                                                   255, 253, 194, 46),

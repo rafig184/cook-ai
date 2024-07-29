@@ -25,21 +25,10 @@ class FavoriteDatabase {
     loadData();
   }
 
-  // void loadData() {
-  //   print("Loading Data from DB");
-  //   // favoriteGifs = _myBox.values.toList();
-  //   favoriteRecipes = _myBox.get("FAVORITELIST");
-  // }
-
   void loadData() {
     print("Loading Data from DB");
     favoriteRecipes = _myBox.values.toList();
   }
-
-  // void updateDatabase() {
-  //   // _myBox.putAll({for (var gif in favoriteGifs) gif.id: gif});
-  //   _myBox.put("FAVORITELIST", favoriteRecipes);
-  // }
 
   void updateDatabase() {
     _myBox
@@ -56,7 +45,7 @@ class FavoriteDatabase {
     _myBox.delete(favorite.id);
   }
 
-  Future<void> deleteAll() async {
+  Future<void> deleteAllRecipes() async {
     // Assuming favoriteGifIds is a list of keys
     await _myBox.clear();
     favoriteRecipes.clear();
