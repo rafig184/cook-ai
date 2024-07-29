@@ -1,12 +1,9 @@
-import 'dart:convert';
 import 'package:cookai/model/favorites_model.dart';
 import 'package:cookai/saved_recipes.dart';
 import 'package:cookai/searchPage.dart';
 import 'package:cookai/utils/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});

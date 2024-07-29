@@ -76,7 +76,6 @@ class _SearchPageState extends State<SearchPage> {
       print(searchText);
       print('respone  ===> ${response.text}');
       final String responseText = response.text ?? '';
-      final List<dynamic> jsonResponse = jsonDecode(responseText);
 
       if (responseText.contains(
           "GenerativeAIException: Candidate was blocked due to recitation")) {
