@@ -15,6 +15,9 @@ class SavedRecipes extends StatefulWidget {
 class _SavedRecipesState extends State<SavedRecipes> {
   late Box<FavoriteData> favoriteBox;
   FavoriteDatabase db = FavoriteDatabase();
+  TextEditingController searchController = TextEditingController();
+  List searchResults = [];
+  bool isSearch = false;
 
   @override
   void initState() {
@@ -27,7 +30,32 @@ class _SavedRecipesState extends State<SavedRecipes> {
     await db.initialize();
   }
 
-  Future<void> _showMyDialog(index) async {
+  Future<void> searchRecipe(name) async {
+    if (name.isEmpty) {
+      setState(() {
+        isSearch = false;
+      });
+    } else {
+      try {
+        final response = await db.searchSavedRecipes(name);
+        setState(() {
+          searchResults = response;
+          isSearch = true;
+        });
+        print(response);
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
+
+  void ClearSearch() {
+    setState(() {
+      isSearch = false;
+    });
+  }
+
+  Future<void> _showMyDialog(recipe) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -59,9 +87,12 @@ class _SavedRecipesState extends State<SavedRecipes> {
                         children: [
                           TextButton(
                             onPressed: () async {
-                              await favoriteBox.deleteAt(index);
+                              await db.deleteFavorite(recipe);
+                              await searchRecipe(searchController.text);
                               Navigator.of(context).pop();
-                              setState(() {});
+                              setState(() {
+                                // isSearch = false;
+                              });
                             },
                             child: const Text(
                               "Yes",
@@ -129,6 +160,9 @@ class _SavedRecipesState extends State<SavedRecipes> {
                           TextButton(
                             onPressed: () async {
                               await db.deleteAllRecipes();
+                              setState(() {
+                                isSearch = false;
+                              });
                               Navigator.of(context).pop();
                               setState(() {});
                             },
@@ -172,6 +206,59 @@ class _SavedRecipesState extends State<SavedRecipes> {
           ? const Text("There are no saved recipes..")
           : Column(
               children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 5),
+                  child: Text(
+                    "Saved Recipes",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      left: 15.0, right: 15.0, top: 15.0, bottom: 5.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.search, color: Colors.grey),
+                          onPressed: () async {
+                            await searchRecipe(searchController.text);
+                          },
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: searchController,
+                            maxLines: null,
+                            decoration: const InputDecoration(
+                              hintText: "Search saved recipes...",
+                              border: InputBorder.none,
+                            ),
+                            textInputAction: TextInputAction.done,
+                            onChanged: (value) {
+                              setState(() {});
+                            },
+                            onSubmitted: (value) async {
+                              await searchRecipe(searchController.text);
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          onPressed: () {
+                            searchController.clear();
+                            ClearSearch();
+                            setState(() {});
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 TextButton(
                     onPressed: () async {
                       await deleteAllDialog();
@@ -181,10 +268,12 @@ class _SavedRecipesState extends State<SavedRecipes> {
                   child: ValueListenableBuilder(
                     valueListenable: favoriteBox.listenable(),
                     builder: (context, Box<FavoriteData> box, _) {
+                      final displayList =
+                          isSearch ? searchResults : box.values.toList();
                       return ListView.builder(
-                        itemCount: box.length,
+                        itemCount: displayList.length,
                         itemBuilder: (context, index) {
-                          final recipe = box.getAt(index);
+                          final recipe = displayList[index];
                           var recipeName = recipe?.name.toString();
                           var recipeDescription =
                               recipe?.description.toString();
@@ -237,21 +326,16 @@ class _SavedRecipesState extends State<SavedRecipes> {
                                       const SizedBox(height: 10),
                                       Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                            MainAxisAlignment.spaceEvenly,
                                         children: [
                                           TextButton(
                                             onPressed: () {
                                               SocialShare.shareOptions(
                                                   stringRecipe);
                                             },
-                                            child: const Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.share,
-                                                  color: Colors.grey,
-                                                ),
-                                                Text("Share")
-                                              ],
+                                            child: const Icon(
+                                              Icons.share,
+                                              color: Colors.grey,
                                             ),
                                           ),
                                           TextButton(
@@ -264,32 +348,23 @@ class _SavedRecipesState extends State<SavedRecipes> {
                                                     "Copied to Clipboard.."),
                                               ));
                                             },
-                                            child: const Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.copy,
-                                                  color: Colors.grey,
-                                                ),
-                                                Text("Copy")
-                                              ],
+                                            child: const Icon(
+                                              Icons.copy,
+                                              color: Colors.grey,
                                             ),
                                           ),
+                                          TextButton(
+                                            onPressed: () {
+                                              _showMyDialog(recipe);
+                                            },
+                                            child: const Icon(
+                                              Icons.delete,
+                                              color: Colors.grey,
+                                            ),
+                                          )
                                         ],
                                       )
                                     ],
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                top: 15,
-                                right: 8,
-                                child: TextButton(
-                                  onPressed: () {
-                                    _showMyDialog(index);
-                                  },
-                                  child: const Icon(
-                                    Icons.delete,
-                                    color: Color.fromARGB(255, 255, 62, 62),
                                   ),
                                 ),
                               ),

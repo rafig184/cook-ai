@@ -40,7 +40,7 @@ class FavoriteDatabase {
     updateDatabase();
   }
 
-  void deleteFavorite(FavoriteData favorite) {
+  Future<void> deleteFavorite(FavoriteData favorite) async {
     favoriteRecipes.removeWhere((item) => item.id == favorite.id);
     _myBox.delete(favorite.id);
   }
@@ -51,7 +51,12 @@ class FavoriteDatabase {
     favoriteRecipes.clear();
   }
 
-  bool isFavorite(String id) {
-    return favoriteRecipes.any((favorite) => favorite.id == id);
+  bool isFavorite(String name) {
+    return favoriteRecipes.any((favorite) => favorite.name == name);
+  }
+
+  Future<List> searchSavedRecipes(String recipe) async {
+    return Future.value(
+        favoriteRecipes.where((item) => item.name.contains(recipe)).toList());
   }
 }

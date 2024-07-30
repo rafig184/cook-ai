@@ -68,7 +68,7 @@ class _HomepageState extends State<Homepage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.star),
+              leading: const Icon(Icons.favorite),
               title: const Text(
                 "Saved Recipes",
                 textAlign: TextAlign.right,

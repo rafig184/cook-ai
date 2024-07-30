@@ -119,7 +119,7 @@ class _SearchPageState extends State<SearchPage> {
         instructions: instructions);
 
     setState(() {
-      if (db.isFavorite(id)) {
+      if (db.isFavorite(name)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Recipe is already in favorites.."),
@@ -210,8 +210,7 @@ class _SearchPageState extends State<SearchPage> {
               ? Container(
                   child: isLoading
                       ? Padding(
-                          padding: const EdgeInsets.only(
-                              top: 30.0), // Adjust the padding value as needed
+                          padding: const EdgeInsets.only(top: 150.0),
                           child: Column(
                             children: [
                               LoadingAnimationWidget.hexagonDots(
@@ -288,21 +287,17 @@ class _SearchPageState extends State<SearchPage> {
                                               const SizedBox(height: 10),
                                               Row(
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment.center,
+                                                    MainAxisAlignment
+                                                        .spaceEvenly,
                                                 children: [
                                                   TextButton(
                                                     onPressed: () {
                                                       SocialShare.shareOptions(
                                                           stringRecipe);
                                                     },
-                                                    child: const Column(
-                                                      children: [
-                                                        Icon(
-                                                          Icons.share,
-                                                          color: Colors.grey,
-                                                        ),
-                                                        Text("Share")
-                                                      ],
+                                                    child: const Icon(
+                                                      Icons.share,
+                                                      color: Colors.grey,
                                                     ),
                                                   ),
                                                   TextButton(
@@ -319,44 +314,42 @@ class _SearchPageState extends State<SearchPage> {
                                                             "Copied to Clipboard.."),
                                                       ));
                                                     },
-                                                    child: const Column(
-                                                      children: [
-                                                        Icon(
-                                                          Icons.copy,
-                                                          color: Colors.grey,
-                                                        ),
-                                                        Text("Copy")
-                                                      ],
+                                                    child: const Icon(
+                                                      Icons.copy,
+                                                      color: Colors.grey,
                                                     ),
                                                   ),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      addToFavorite(
+                                                        resultAI[index]['id'],
+                                                        resultAI[index]['name'],
+                                                        resultAI[index]
+                                                            ['description'],
+                                                        resultAI[index]
+                                                                ['ingredients']
+                                                            .join(
+                                                                ', '), // Convert list to string
+                                                        resultAI[index]
+                                                                ['instructions']
+                                                            .join(', '),
+                                                      );
+                                                    },
+                                                    child: Icon(
+                                                      Icons.favorite,
+                                                      color: db.isFavorite(
+                                                              resultAI[index]
+                                                                  ['name'])
+                                                          ? Colors.red
+                                                          : Colors.grey,
+                                                    ),
+                                                  )
                                                 ],
                                               )
                                             ],
                                           ),
                                         ),
                                       ),
-                                      Positioned(
-                                          top: 15,
-                                          right: 8,
-                                          child: TextButton(
-                                            onPressed: () {
-                                              addToFavorite(
-                                                resultAI[index]['id'],
-                                                resultAI[index]['name'],
-                                                resultAI[index]['description'],
-                                                resultAI[index]['ingredients'].join(
-                                                    ', '), // Convert list to string
-                                                resultAI[index]['instructions']
-                                                    .join(', '),
-                                              );
-                                            },
-                                            child: const Icon(
-                                              size: 30,
-                                              Icons.star,
-                                              color: Color.fromARGB(
-                                                  255, 253, 194, 46),
-                                            ),
-                                          ))
                                     ]);
                                   },
                                 ),
