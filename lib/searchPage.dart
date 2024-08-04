@@ -107,7 +107,7 @@ class _SearchPageState extends State<SearchPage> {
         final List<dynamic> jsonResponse = jsonDecode(responseText);
 
         // Ensure the jsonResponse is a list and not empty
-        if (jsonResponse is List && jsonResponse.isNotEmpty) {
+        if (jsonResponse.isNotEmpty) {
           setState(() {
             resultAI = jsonResponse;
             recipiesNames = jsonResponse;
