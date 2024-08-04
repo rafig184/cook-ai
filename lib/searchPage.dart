@@ -10,7 +10,6 @@ import 'dart:convert';
 import 'package:cookai/utils/colors.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:social_share/social_share.dart';
 import 'package:http/http.dart' as http;
