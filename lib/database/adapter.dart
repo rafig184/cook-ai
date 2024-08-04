@@ -13,6 +13,9 @@ class FavoriteDataAdapter extends TypeAdapter<FavoriteData> {
       description: reader.readString(),
       ingredients: reader.readString(),
       instructions: reader.readString(),
+      timetomake: reader.readString(),
+      calories: reader.readString(),
+      image: reader.readString(),
     );
   }
 
@@ -23,5 +26,8 @@ class FavoriteDataAdapter extends TypeAdapter<FavoriteData> {
     writer.writeString(obj.description);
     writer.writeString(obj.ingredients);
     writer.writeString(obj.instructions);
+    writer.writeString(obj.timetomake);
+    writer.writeString(obj.calories);
+    writer.writeString(obj.image);
   }
 }

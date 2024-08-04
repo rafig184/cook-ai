@@ -17,16 +17,28 @@ class FavoriteData extends HiveObject {
   @HiveField(4)
   String instructions;
 
+  @HiveField(5)
+  String timetomake;
+
+  @HiveField(5)
+  String calories;
+
+  @HiveField(6)
+  String image;
+
   FavoriteData({
     required this.id,
     required this.name,
     required this.description,
     required this.ingredients,
     required this.instructions,
+    required this.timetomake,
+    required this.calories,
+    required this.image,
   });
 
   @override
   String toString() {
-    return 'FavoriteData{id: $id, name: $name, description: $description, ingredients: $ingredients, instructions: $instructions}';
+    return 'FavoriteData{id: $id, name: $name, description: $description, ingredients: $ingredients, instructions: $instructions, timetomake: $timetomake, calories: $calories, image: $image}';
   }
 }

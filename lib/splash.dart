@@ -45,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       60), // Add some space between the image and the loader
               LoadingAnimationWidget.hexagonDots(
                 color: primaryColor,
-                size: 50,
+                size: 80,
               ),
             ],
           ),

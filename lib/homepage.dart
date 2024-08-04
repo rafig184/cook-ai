@@ -38,6 +38,7 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       appBar: AppBar(
         toolbarHeight: 120,
@@ -77,6 +78,14 @@ class _HomepageState extends State<Homepage> {
                 _onItemTapped(1);
                 Navigator.of(context).pop();
               },
+            ),
+            const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: 400),
+                Text("Version 1.0.1"),
+                Text("Developed by RGDev Ⓒ 2024"),
+              ],
             ),
           ],
         ),

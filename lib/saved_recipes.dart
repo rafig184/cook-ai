@@ -1,6 +1,7 @@
 import 'package:cookai/database/database.dart';
 import 'package:cookai/model/favorites_model.dart';
 import 'package:cookai/utils/colors.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:social_share/social_share.dart';
@@ -206,13 +207,6 @@ class _SavedRecipesState extends State<SavedRecipes> {
           ? const Text("There are no saved recipes..")
           : Column(
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 5),
-                  child: Text(
-                    "Saved Recipes",
-                    style: TextStyle(fontSize: 20),
-                  ),
-                ),
                 Padding(
                   padding: const EdgeInsets.only(
                       left: 15.0, right: 15.0, top: 15.0, bottom: 5.0),
@@ -259,11 +253,29 @@ class _SavedRecipesState extends State<SavedRecipes> {
                     ),
                   ),
                 ),
-                TextButton(
-                    onPressed: () async {
-                      await deleteAllDialog();
-                    },
-                    child: const Text("Clear All")),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(left: 15),
+                      child: Text(
+                        "Saved Recipes",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        right: 15,
+                      ),
+                      child: TextButton(
+                          onPressed: () async {
+                            await deleteAllDialog();
+                          },
+                          child: const Text("Clear All")),
+                    ),
+                  ],
+                ),
                 Expanded(
                   child: ValueListenableBuilder(
                     valueListenable: favoriteBox.listenable(),
@@ -281,93 +293,192 @@ class _SavedRecipesState extends State<SavedRecipes> {
                               recipe?.ingredients.toString();
                           var recipeInstructions =
                               recipe?.instructions.toString();
+                          var timeToMake = recipe?.timetomake;
+                          var calories = recipe?.calories.toString();
                           var stringRecipe =
-                              "$recipeName, $recipeDescription Ingredients : $recipeIngredients, Instructions : $recipeInstructions";
-                          return Stack(
-                            children: [
-                              Card(
-                                margin: const EdgeInsets.all(10.0),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
+                              "$recipeName, Time to make : $timeToMake, $recipeDescription Ingredients : $recipeIngredients, Instructions : $recipeInstructions, Calories : $calories";
+                          return ExpansionTile(
+                            collapsedBackgroundColor: Colors.grey.shade200,
+                            // backgroundColor: backgroundColor,
+                            title: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
                                         recipe?.name ?? 'No Name',
                                         style: const TextStyle(
-                                          fontSize: 20.0,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                            fontSize: 18.0,
+                                            fontWeight: FontWeight.w500),
+                                        softWrap: true,
                                       ),
-                                      const SizedBox(height: 10.0),
-                                      Text(recipe?.description ??
-                                          'No Description'),
-                                      const SizedBox(height: 10.0),
-                                      const Text(
-                                        'Ingredients:',
-                                        style: TextStyle(
-                                          fontSize: 18.0,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        _showMyDialog(recipe);
+                                      },
+                                      child: const Icon(
+                                        Icons.delete,
+                                        color: Colors.grey,
                                       ),
-                                      Text(recipe?.ingredients ??
-                                          'No Ingredients'),
-                                      const SizedBox(height: 10.0),
-                                      const Text(
-                                        'Instructions:',
-                                        style: TextStyle(
-                                          fontSize: 18.0,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                    )
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(16.0),
+                                      child: Image.network(
+                                        recipe?.image,
+                                        fit: BoxFit.cover,
+                                        width: 300,
+                                        height: 100,
                                       ),
-                                      Text(recipe?.instructions ??
-                                          'No Instructions'),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            children: [
+                              Stack(
+                                children: [
+                                  Card(
+                                    margin: const EdgeInsets.all(10.0),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          TextButton(
-                                            onPressed: () {
-                                              SocialShare.shareOptions(
-                                                  stringRecipe);
-                                            },
-                                            child: const Icon(
-                                              Icons.share,
-                                              color: Colors.grey,
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  recipe?.name ?? 'No Name',
+                                                  style: const TextStyle(
+                                                    fontSize: 20.0,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  softWrap: true,
+                                                ),
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  const Icon(
+                                                      Icons.timer_outlined),
+                                                  Text(timeToMake)
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10.0),
+                                          Text(recipe?.description ??
+                                              'No Description'),
+                                          const SizedBox(height: 10.0),
+                                          const Text(
+                                            'Ingredients:',
+                                            style: TextStyle(
+                                              fontSize: 18.0,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          TextButton(
-                                            onPressed: () {
-                                              SocialShare.copyToClipboard(
-                                                  text: stringRecipe);
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(const SnackBar(
-                                                content: Text(
-                                                    "Copied to Clipboard.."),
-                                              ));
-                                            },
-                                            child: const Icon(
-                                              Icons.copy,
-                                              color: Colors.grey,
+                                          Text(recipe?.ingredients ??
+                                              'No Ingredients'),
+                                          const SizedBox(height: 10.0),
+                                          const Text(
+                                            'Instructions:',
+                                            style: TextStyle(
+                                              fontSize: 18.0,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          TextButton(
-                                            onPressed: () {
-                                              _showMyDialog(recipe);
-                                            },
-                                            child: const Icon(
-                                              Icons.delete,
-                                              color: Colors.grey,
+                                          Text(recipe?.instructions ??
+                                              'No Instructions'),
+                                          const SizedBox(height: 10),
+                                          const Text(
+                                            'Calories:',
+                                            style: TextStyle(
+                                              fontSize: 18.0,
+                                              fontWeight: FontWeight.bold,
                                             ),
+                                          ),
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                CupertinoIcons.flame_fill,
+                                                color: Colors.black,
+                                                size: 15.0,
+                                              ),
+                                              const SizedBox(
+                                                width: 5,
+                                              ),
+                                              Text(recipe?.calories),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 15),
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                                16.0), // Adjust the radius as needed
+                                            child: Image.network(
+                                              recipe?.image,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 15),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceEvenly,
+                                            children: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  SocialShare.shareOptions(
+                                                      stringRecipe);
+                                                },
+                                                child: const Icon(
+                                                  Icons.share,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  SocialShare.copyToClipboard(
+                                                      text: stringRecipe);
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                          const SnackBar(
+                                                    content: Text(
+                                                        "Copied to Clipboard.."),
+                                                  ));
+                                                },
+                                                child: const Icon(
+                                                  Icons.copy,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  _showMyDialog(recipe);
+                                                },
+                                                child: const Icon(
+                                                  Icons.delete,
+                                                  color: Colors.grey,
+                                                ),
+                                              )
+                                            ],
                                           )
                                         ],
-                                      )
-                                    ],
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
+                                ],
+                              )
                             ],
                           );
                         },
