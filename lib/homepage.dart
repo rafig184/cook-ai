@@ -43,7 +43,7 @@ class _HomepageState extends State<Homepage> {
       appBar: AppBar(
         toolbarHeight: 120,
         backgroundColor: backgroundColor,
-        title: Image.asset("images/logosmall.png", width: 90),
+        title: Image.asset("images/logosmall2.png", width: 90),
         centerTitle: true,
       ),
       endDrawer: Drawer(
@@ -55,7 +55,7 @@ class _HomepageState extends State<Homepage> {
                   color: backgroundColor,
                 ),
                 child: Image.asset(
-                  "images/logosmall.png",
+                  "images/logosmall2.png",
                 )),
             ListTile(
               leading: const Icon(Icons.home),

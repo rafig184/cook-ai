@@ -1,4 +1,4 @@
-package com.example.cookai
+package com.rgdev.cookai
 
 import io.flutter.embedding.android.FlutterActivity
 
