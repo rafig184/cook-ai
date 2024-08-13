@@ -405,31 +405,33 @@ class _SearchPageState extends State<SearchPage> {
                     : Container(),
                 Padding(
                   padding: const EdgeInsets.only(top: 7),
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        textStyle: const TextStyle(fontSize: 17),
-                      ),
-                      onPressed: () {
-                        FocusScope.of(context).unfocus();
-                        searchWithAi(ingredientsList);
-                      },
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "Create Recipes",
+                  child: ingredientsList.isEmpty
+                      ? Container()
+                      : ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            foregroundColor: Colors.white,
+                            textStyle: const TextStyle(fontSize: 17),
                           ),
-                          SizedBox(
-                            width: 7,
-                          ),
-                          Icon(
-                            Icons.send_rounded,
-                            size: 18,
-                          )
-                        ],
-                      )),
+                          onPressed: () {
+                            FocusScope.of(context).unfocus();
+                            searchWithAi(ingredientsList);
+                          },
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                "Create Recipes",
+                              ),
+                              SizedBox(
+                                width: 7,
+                              ),
+                              Icon(
+                                Icons.send_rounded,
+                                size: 18,
+                              )
+                            ],
+                          )),
                 ),
               ],
             ),
