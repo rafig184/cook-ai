@@ -83,7 +83,7 @@ class _HomepageState extends State<Homepage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: 400),
-                Text("Version 1.0.1"),
+                Text("Version 1.0.2"),
                 Text("Developed by RGDev Ⓒ 2024"),
               ],
             ),

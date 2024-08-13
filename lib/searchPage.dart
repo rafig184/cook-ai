@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_langdetect/flutter_langdetect.dart' as langdetect;
 import 'package:cookai/database/database.dart';
 import 'package:cookai/model/favorites_model.dart';
@@ -29,9 +30,11 @@ class _SearchPageState extends State<SearchPage> {
   List<dynamic> resultAI = <dynamic>[];
   List<dynamic> recipiesNames = <dynamic>[];
   List<dynamic> imageListPexels = [];
+  List<dynamic> ingredientsList = [];
   bool isLoading = false;
   bool isSearch = false;
   bool isImage = false;
+  bool isIngredientsVisible = false;
   bool isLoadingSnackBar = false;
   bool isLoadingImage = false;
   bool isNotGenerate = false;
@@ -71,8 +74,15 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {});
   }
 
-  Future<void> searchWithAi(String searchText) async {
-    if (searchText.isEmpty) {
+  void addIngredients(String searchText) {
+    ingredientsList.add(searchText);
+    setState(() {
+      isIngredientsVisible = true;
+    });
+  }
+
+  Future<void> searchWithAi(List ingredientsList) async {
+    if (ingredientsList.isEmpty) {
       setState(() {
         _isFieldEmpty = true;
         isNotGenerate = true;
@@ -80,10 +90,14 @@ class _SearchPageState extends State<SearchPage> {
       return;
     }
 
+    var stringIngredients = ingredientsList.toString();
+
     setState(() {
       isNotGenerate = false;
       isLoading = true;
       isSearch = true;
+      isIngredientsVisible = false;
+      ingredientsList.clear();
     });
 
     print("Start running");
@@ -92,7 +106,7 @@ class _SearchPageState extends State<SearchPage> {
     final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
     final content = [
       Content.text(
-        'create some recipes that can be created with this ingredients: $searchText. Send the response data in the same language it was sent in, in JSON format, without adding "```json" at the beginning or the first and last {}. Always in this format: [{"id": "random 6-figure number as a string", "name": "name", "description": "description", "ingredients": ["ingredient1", "ingredient2"], "instructions": "instructions", "timetomake": "time", "calories": "calories"}]',
+        'create some recipes that can be created with this ingredients: $stringIngredients. Send the response data in the same language it was sent in, in JSON format, without adding "```json" at the beginning or the first and last {}. Always in this format: [{"id": "random 6-figure number as a string", "name": "name", "description": "description", "ingredients": ["ingredient1", "ingredient2"], "instructions": "instructions", "timetomake": "time", "calories": "calories"}], return the ingretients with messurments',
       ),
     ];
 
@@ -219,6 +233,7 @@ class _SearchPageState extends State<SearchPage> {
   void clearAll() {
     setState(() {
       isSearch = false;
+      ingredientsList.clear();
     });
   }
 
@@ -287,69 +302,136 @@ class _SearchPageState extends State<SearchPage> {
           Padding(
             padding: const EdgeInsets.only(
                 left: 15.0, right: 15.0, top: 15.0, bottom: 15.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.search, color: Colors.grey),
-                    onPressed: () {
-                      searchWithAi(searchController.text);
-                    },
+            child: Column(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8.0),
                   ),
-                  Expanded(
-                    child: TextField(
-                      controller: searchController,
-                      maxLines: null,
-                      focusNode: _focusNode,
-                      decoration: InputDecoration(
-                        hintText: "Type ingredients...",
-                        border: InputBorder.none,
-                        errorText:
-                            _isFieldEmpty ? 'This field cannot be empty' : null,
-                        errorBorder: _isFieldEmpty
-                            ? const UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.red),
-                              )
-                            : InputBorder.none,
-                        focusedErrorBorder: _isFieldEmpty
-                            ? const UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.red),
-                              )
-                            : InputBorder.none,
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.grey),
+                        onPressed: () {
+                          searchController.clear();
+                          clearAll();
+                          setState(() {});
+                        },
                       ),
-                      textInputAction: TextInputAction.done,
-                      onChanged: (value) {
-                        setState(() {
-                          setState(() {
-                            _isFieldEmpty = value.isEmpty;
-                          });
-                        });
-                      },
-                      onSubmitted: (value) {
-                        setState(() {
-                          _isFieldEmpty = value.isEmpty;
-                        });
-                        if (!_isFieldEmpty) {
-                          searchWithAi(searchController.text);
-                        }
-                      },
-                    ),
+                      Expanded(
+                        child: TextField(
+                          controller: searchController,
+                          maxLines: null,
+                          focusNode: _focusNode,
+                          decoration: InputDecoration(
+                            hintText: "Type ingredients...",
+                            border: InputBorder.none,
+                            errorText: _isFieldEmpty
+                                ? 'Please add ingredients..'
+                                : null,
+                            errorBorder: _isFieldEmpty
+                                ? const UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.red),
+                                  )
+                                : InputBorder.none,
+                            focusedErrorBorder: _isFieldEmpty
+                                ? const UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.red),
+                                  )
+                                : InputBorder.none,
+                          ),
+                          textInputAction: TextInputAction.done,
+                          onChanged: (value) {
+                            setState(() {
+                              setState(() {
+                                _isFieldEmpty = value.isEmpty;
+                              });
+                            });
+                          },
+                          onSubmitted: (value) {
+                            setState(() {
+                              _isFieldEmpty = value.isEmpty;
+                            });
+                            if (!_isFieldEmpty) {
+                              addIngredients(searchController.text);
+                              searchController.clear();
+                            }
+                            FocusScope.of(context).requestFocus(_focusNode);
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add, color: Colors.grey),
+                        onPressed: () {
+                          addIngredients(searchController.text);
+                        },
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.grey),
-                    onPressed: () {
-                      searchController.clear();
-                      clearAll();
-                      setState(() {});
-                    },
-                  ),
-                ],
-              ),
+                ),
+                isIngredientsVisible
+                    ? Wrap(
+                        spacing: 5,
+                        runSpacing: 5,
+                        children: ingredientsList.map<Widget>((ingredient) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: ElevatedButton(
+                              iconAlignment: IconAlignment.end,
+                              onPressed: () {
+                                setState(() {
+                                  ingredientsList.remove(ingredient);
+                                });
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(ingredient.toString()),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  const Icon(Icons.close,
+                                      color: Colors.grey, size: 17),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      )
+                    : Container(),
+                Padding(
+                  padding: const EdgeInsets.only(top: 7),
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        textStyle: const TextStyle(fontSize: 17),
+                      ),
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        searchWithAi(ingredientsList);
+                      },
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "Create Recipes",
+                          ),
+                          SizedBox(
+                            width: 7,
+                          ),
+                          Icon(
+                            Icons.send_rounded,
+                            size: 18,
+                          )
+                        ],
+                      )),
+                ),
+              ],
             ),
           ),
           isSearch
@@ -383,18 +465,26 @@ class _SearchPageState extends State<SearchPage> {
                                         recipe['description'].toString();
                                     var recipeIngredients =
                                         recipe['ingredients'] is List
-                                            ? recipe['ingredients'].join(', ')
-                                            : recipe['ingredients'].toString();
+                                            ? (recipe['ingredients'] as List)
+                                                .join(', ')
+                                                .replaceAll(', ', '\n')
+                                            : recipe['ingredients']
+                                                .toString()
+                                                .replaceAll(', ', '\n');
+
                                     var recipeInstructions =
                                         recipe['instructions'] is List
-                                            ? recipe['instructions'].join(', ')
+                                            ? (recipe['instructions'] as List)
+                                                .join(', ')
                                             : recipe['instructions'].toString();
+
                                     var timeToMake =
                                         recipe['timetomake'].toString();
                                     var calories =
-                                        recipe['timetomake'].toString();
+                                        recipe['calories'].toString();
                                     var stringRecipe =
-                                        "$recipeName, Time to make : $timeToMake, $recipeDescription Ingredients : $recipeIngredients, Instructions : $recipeInstructions, Calories : $calories";
+                                        "${recipeName + '\n' + '\n'}Time to make : ${timeToMake + '\n' + '\n'}${recipeDescription + '\n' + '\n'}Ingredients :${'\n'}${recipeIngredients + '\n' + '\n'}Instructions :${'\n'}${recipeInstructions + '\n' + '\n'}Calories : ${calories + '\n'}";
+
                                     return Stack(children: [
                                       Card(
                                         margin: const EdgeInsets.all(10.0),
@@ -502,6 +592,16 @@ class _SearchPageState extends State<SearchPage> {
                                                     MainAxisAlignment
                                                         .spaceEvenly,
                                                 children: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      SocialShare.shareOptions(
+                                                          recipeIngredients);
+                                                    },
+                                                    child: const Icon(
+                                                      Icons.list_alt,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
                                                   TextButton(
                                                     onPressed: () {
                                                       SocialShare.shareOptions(

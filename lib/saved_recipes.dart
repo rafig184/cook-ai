@@ -289,14 +289,21 @@ class _SavedRecipesState extends State<SavedRecipes> {
                           var recipeName = recipe?.name.toString();
                           var recipeDescription =
                               recipe?.description.toString();
-                          var recipeIngredients =
-                              recipe?.ingredients.toString();
-                          var recipeInstructions =
-                              recipe?.instructions.toString();
+                          var recipeIngredients = recipe?.ingredients is List
+                              ? (recipe?.ingredients as List)
+                                  .join(', ')
+                                  .replaceAll(', ', '\n')
+                              : recipe?.ingredients
+                                  .toString()
+                                  .replaceAll(', ', '\n');
+
+                          var recipeInstructions = recipe?.instructions is List
+                              ? (recipe?.instructions as List).join(', ')
+                              : recipe?.instructions.toString();
                           var timeToMake = recipe?.timetomake;
                           var calories = recipe?.calories.toString();
                           var stringRecipe =
-                              "$recipeName, Time to make : $timeToMake, $recipeDescription Ingredients : $recipeIngredients, Instructions : $recipeInstructions, Calories : $calories";
+                              "$recipeName\n\nTime to make: $timeToMake\n\n$recipeDescription\n\nIngredients:\n$recipeIngredients\n\nInstructions:\n$recipeInstructions\n\nCalories: $calories";
                           return ExpansionTile(
                             collapsedBackgroundColor: Colors.grey.shade200,
                             // backgroundColor: backgroundColor,
@@ -389,8 +396,12 @@ class _SavedRecipesState extends State<SavedRecipes> {
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          Text(recipe?.ingredients ??
-                                              'No Ingredients'),
+                                          Text(
+                                            recipeIngredients ??
+                                                'No Ingredients',
+                                            softWrap: true,
+                                            maxLines: null,
+                                          ),
                                           const SizedBox(height: 10.0),
                                           const Text(
                                             'Instructions:',
@@ -436,6 +447,17 @@ class _SavedRecipesState extends State<SavedRecipes> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceEvenly,
                                             children: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  SocialShare.shareOptions(
+                                                      recipeIngredients
+                                                          .toString());
+                                                },
+                                                child: const Icon(
+                                                  Icons.list_alt,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
                                               TextButton(
                                                 onPressed: () {
                                                   SocialShare.shareOptions(
