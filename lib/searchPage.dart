@@ -79,7 +79,8 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {
       isIngredientInclude = false;
     });
-    if (ingredientsList.contains(searchText)) {
+    if (ingredientsList.contains(searchText) ||
+        ingredientsList.contains('$searchText ')) {
       setState(() {
         isIngredientInclude = true;
       });
@@ -341,7 +342,7 @@ class _SearchPageState extends State<SearchPage> {
                             errorText: _isFieldEmpty
                                 ? 'Please add ingredients..'
                                 : isIngredientInclude
-                                    ? 'Ingredient already include..'
+                                    ? 'Ingredient already included..'
                                     : null,
                             errorBorder: _isFieldEmpty
                                 ? const UnderlineInputBorder(
