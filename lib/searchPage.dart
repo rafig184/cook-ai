@@ -34,6 +34,7 @@ class _SearchPageState extends State<SearchPage> {
   bool isLoading = false;
   bool isSearch = false;
   bool isImage = false;
+  bool isIngredientInclude = false;
   bool isIngredientsVisible = false;
   bool isLoadingSnackBar = false;
   bool isLoadingImage = false;
@@ -75,6 +76,15 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void addIngredients(String searchText) {
+    setState(() {
+      isIngredientInclude = false;
+    });
+    if (ingredientsList.contains(searchText)) {
+      setState(() {
+        isIngredientInclude = true;
+      });
+      return;
+    }
     ingredientsList.add(searchText);
     setState(() {
       isIngredientsVisible = true;
@@ -168,10 +178,10 @@ class _SearchPageState extends State<SearchPage> {
           var imageSearch = result['name'];
           final language = langdetect.detect(imageSearch);
           print("langugae ---> $language");
-          if (language == "he") {
+          if (language != 'en') {
             final translator = GoogleTranslator();
-            var translation =
-                await translator.translate(imageSearch, from: 'he', to: 'en');
+            var translation = await translator.translate(imageSearch,
+                from: language, to: 'en');
 
             print("translation ---> $translation");
             var apiUrl =
@@ -326,17 +336,20 @@ class _SearchPageState extends State<SearchPage> {
                           maxLines: null,
                           focusNode: _focusNode,
                           decoration: InputDecoration(
-                            hintText: "Type ingredients...",
+                            hintText: "Press + after each ingredient..",
                             border: InputBorder.none,
                             errorText: _isFieldEmpty
                                 ? 'Please add ingredients..'
-                                : null,
+                                : isIngredientInclude
+                                    ? 'Ingredient already include..'
+                                    : null,
                             errorBorder: _isFieldEmpty
                                 ? const UnderlineInputBorder(
                                     borderSide: BorderSide(color: Colors.red),
                                   )
                                 : InputBorder.none,
-                            focusedErrorBorder: _isFieldEmpty
+                            focusedErrorBorder: _isFieldEmpty ||
+                                    isIngredientInclude
                                 ? const UnderlineInputBorder(
                                     borderSide: BorderSide(color: Colors.red),
                                   )
@@ -347,6 +360,7 @@ class _SearchPageState extends State<SearchPage> {
                             setState(() {
                               setState(() {
                                 _isFieldEmpty = value.isEmpty;
+                                isIngredientInclude = false;
                               });
                             });
                           },
@@ -366,6 +380,7 @@ class _SearchPageState extends State<SearchPage> {
                         icon: const Icon(Icons.add, color: Colors.grey),
                         onPressed: () {
                           addIngredients(searchController.text);
+                          searchController.clear();
                         },
                       ),
                     ],
