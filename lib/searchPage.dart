@@ -15,6 +15,9 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:social_share/social_share.dart';
 import 'package:http/http.dart' as http;
 import 'package:translator/translator.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:vertex_ai/vertex_ai.dart';
+import 'package:flutter/services.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -30,8 +33,9 @@ class _SearchPageState extends State<SearchPage> {
   List<dynamic> resultAI = <dynamic>[];
   List<dynamic> recipiesNames = <dynamic>[];
   List<dynamic> imageListPexels = [];
-  List<dynamic> ingredientsList = [];
+  List<String> ingredientsList = [];
   bool isLoading = false;
+  bool isAnalyzingImage = false;
   bool isSearch = false;
   bool isImage = false;
   bool isIngredientInclude = false;
@@ -42,6 +46,9 @@ class _SearchPageState extends State<SearchPage> {
   late FavoriteDatabase db;
   final FocusNode _focusNode = FocusNode();
   bool _isFieldEmpty = false;
+  final ImagePicker _picker = ImagePicker();
+  File? _image;
+  String _analysisResult = '';
 
   void _focusOnTextField() {
     FocusScope.of(context).requestFocus(_focusNode);
@@ -59,6 +66,71 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
     searchController.dispose();
     _focusNode.dispose();
+  }
+
+  Future<void> _openCamera() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      setState(() {
+        ingredientsList.clear();
+        resultAI.clear();
+        _image = File(pickedFile.path);
+      });
+    }
+    analysePicture();
+
+    print("image path : $_image");
+  }
+
+  Future<void> analysePicture() async {
+    if (_image == null) {
+      print("No image selected.");
+      return;
+    }
+
+    try {
+      setState(() {
+        isAnalyzingImage = true;
+      });
+      // Use the `google_generative_ai` package for Gemini integration
+      // final apiKey = Platform.environment[geminiAIKey];
+
+      final model = GenerativeModel(
+        model:
+            'gemini-1.5-flash-latest', // Use gemini-pro-vision for image understanding
+        apiKey: geminiAIKey,
+      );
+
+      const promptText =
+          'What ingredients are in this image? just name the ingredients and use , between each ingredient without space';
+      final prompt = TextPart(promptText);
+
+      // Read image bytes efficiently
+      final imageBytes = await _image!.readAsBytes();
+
+      // Create a DataPart for the image
+      final imagePart = DataPart('image/jpeg', imageBytes);
+
+      final content = [prompt, imagePart];
+
+      final response = await model.generateContent([Content.multi(content)]);
+
+      print("this is the response : ${response.text}");
+      setState(() {
+        ingredientsList = response.text!.split(',');
+        print(ingredientsList);
+        isIngredientsVisible = true;
+      });
+    } on PlatformException catch (e) {
+      print("Error using Gemini API: $e");
+    } catch (e) {
+      print("Unexpected error: $e");
+    } finally {
+      setState(() {
+        isAnalyzingImage = false;
+      });
+    }
   }
 
   Future<void> initializeDatabase() async {
@@ -384,6 +456,14 @@ class _SearchPageState extends State<SearchPage> {
                           searchController.clear();
                         },
                       ),
+                      IconButton(
+                        icon: const Icon(Icons.camera_alt_rounded,
+                            color: Colors.grey),
+                        onPressed: () {
+                          _openCamera();
+                          searchController.clear();
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -452,275 +532,307 @@ class _SearchPageState extends State<SearchPage> {
               ],
             ),
           ),
-          isSearch
-              ? Container(
-                  child: isLoading
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 150.0),
-                          child: Column(
-                            children: [
-                              LoadingAnimationWidget.hexagonDots(
-                                color: primaryColor,
-                                size: 80,
+          isAnalyzingImage
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 150.0),
+                  child: Column(
+                    children: [
+                      LoadingAnimationWidget.hexagonDots(
+                        color: primaryColor,
+                        size: 80,
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      const Text("Analyzing image..")
+                    ],
+                  ),
+                )
+              : isSearch
+                  ? Container(
+                      child: isLoading
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 150.0),
+                              child: Column(
+                                children: [
+                                  LoadingAnimationWidget.hexagonDots(
+                                    color: primaryColor,
+                                    size: 80,
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  const Text("Creating recipes just for you..")
+                                ],
                               ),
-                              const SizedBox(
-                                height: 20,
-                              ),
-                              const Text("Creating recipes just for you..")
-                            ],
-                          ),
-                        )
-                      : Flexible(
-                          child: isNotGenerate
-                              ? const Text(
-                                  "AI could not generate, please try again..")
-                              : ListView.builder(
-                                  itemCount: resultAI.length,
-                                  itemBuilder: (context, index) {
-                                    final recipe = resultAI[index];
-                                    var recipeName = recipe['name'].toString();
-                                    var recipeDescription =
-                                        recipe['description'].toString();
-                                    var recipeIngredients =
-                                        recipe['ingredients'] is List
-                                            ? (recipe['ingredients'] as List)
-                                                .join(', ')
-                                                .replaceAll(', ', '\n')
-                                            : recipe['ingredients']
-                                                .toString()
-                                                .replaceAll(', ', '\n');
+                            )
+                          : Flexible(
+                              child: isNotGenerate
+                                  ? const Text(
+                                      "AI could not generate, please try again..")
+                                  : ListView.builder(
+                                      itemCount: resultAI.length,
+                                      itemBuilder: (context, index) {
+                                        final recipe = resultAI[index];
+                                        var recipeName =
+                                            recipe['name'].toString();
+                                        var recipeDescription =
+                                            recipe['description'].toString();
+                                        var recipeIngredients =
+                                            recipe['ingredients'] is List
+                                                ? (recipe['ingredients']
+                                                        as List)
+                                                    .join(', ')
+                                                    .replaceAll(', ', '\n')
+                                                : recipe['ingredients']
+                                                    .toString()
+                                                    .replaceAll(', ', '\n');
 
-                                    var recipeInstructions =
-                                        recipe['instructions'] is List
-                                            ? (recipe['instructions'] as List)
-                                                .join(', ')
-                                            : recipe['instructions'].toString();
+                                        var recipeInstructions =
+                                            recipe['instructions'] is List
+                                                ? (recipe['instructions']
+                                                        as List)
+                                                    .join(', ')
+                                                : recipe['instructions']
+                                                    .toString();
 
-                                    var timeToMake =
-                                        recipe['timetomake'].toString();
-                                    var calories =
-                                        recipe['calories'].toString();
-                                    var stringRecipe =
-                                        "${recipeName + '\n' + '\n'}Time to make : ${timeToMake + '\n' + '\n'}${recipeDescription + '\n' + '\n'}Ingredients :${'\n'}${recipeIngredients + '\n' + '\n'}Instructions :${'\n'}${recipeInstructions + '\n' + '\n'}Calories : ${calories + '\n'}";
+                                        var timeToMake =
+                                            recipe['timetomake'].toString();
+                                        var calories =
+                                            recipe['calories'].toString();
+                                        var stringRecipe =
+                                            "${recipeName + '\n' + '\n'}Time to make : ${timeToMake + '\n' + '\n'}${recipeDescription + '\n' + '\n'}Ingredients :${'\n'}${recipeIngredients + '\n' + '\n'}Instructions :${'\n'}${recipeInstructions + '\n' + '\n'}Calories : ${calories + '\n'}";
 
-                                    return Stack(children: [
-                                      Card(
-                                        margin: const EdgeInsets.all(10.0),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(10.0),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
+                                        return Stack(children: [
+                                          Card(
+                                            margin: const EdgeInsets.all(10.0),
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(10.0),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
-                                                  Flexible(
-                                                    child: Text(
-                                                      recipe['name'] ??
-                                                          'No Name',
-                                                      style: const TextStyle(
-                                                        fontSize: 20.0,
-                                                        fontWeight:
-                                                            FontWeight.bold,
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Flexible(
+                                                        child: Text(
+                                                          recipe['name'] ??
+                                                              'No Name',
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 20.0,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                          softWrap: true,
+                                                        ),
                                                       ),
-                                                      softWrap: true,
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .end,
+                                                        children: [
+                                                          const Icon(Icons
+                                                              .timer_outlined),
+                                                          Text(timeToMake)
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 10.0),
+                                                  Text(recipe['description'] ??
+                                                      'No Description'),
+                                                  const SizedBox(height: 10.0),
+                                                  const Text(
+                                                    'Ingredients:',
+                                                    style: TextStyle(
+                                                      fontSize: 18.0,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  ..._buildTextWidgets(
+                                                      recipe['ingredients']),
+                                                  const SizedBox(height: 10.0),
+                                                  const Text(
+                                                    'Instructions:',
+                                                    style: TextStyle(
+                                                      fontSize: 18.0,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  ..._buildTextWidgets(
+                                                      recipe['instructions']),
+                                                  const SizedBox(height: 10),
+                                                  const Text(
+                                                    'Calories:',
+                                                    style: TextStyle(
+                                                      fontSize: 18.0,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                                   ),
                                                   Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
                                                     children: [
                                                       const Icon(
-                                                          Icons.timer_outlined),
-                                                      Text(timeToMake)
+                                                        CupertinoIcons
+                                                            .flame_fill,
+                                                        color: Colors.black,
+                                                        size: 15.0,
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 5,
+                                                      ),
+                                                      Text(recipe['calories']),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 10),
+                                                  isLoadingImage
+                                                      ? LoadingAnimationWidget
+                                                          .hexagonDots(
+                                                          color: primaryColor,
+                                                          size: 80,
+                                                        )
+                                                      : ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      16.0),
+                                                          child: isImage
+                                                              ? Image.network(
+                                                                  imageListPexels[
+                                                                      index],
+                                                                  fit: BoxFit
+                                                                      .cover,
+                                                                )
+                                                              : const Text(
+                                                                  "No image found"),
+                                                        ),
+                                                  const SizedBox(height: 10),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceEvenly,
+                                                    children: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          SocialShare.shareOptions(
+                                                              recipeIngredients);
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.list_alt,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          SocialShare
+                                                              .shareOptions(
+                                                                  stringRecipe);
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.share,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          SocialShare
+                                                              .copyToClipboard(
+                                                                  text:
+                                                                      stringRecipe);
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                                  const SnackBar(
+                                                            content: Text(
+                                                                "Copied to Clipboard.."),
+                                                          ));
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.copy,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          addToFavorite(
+                                                              resultAI[index]
+                                                                  ['id'],
+                                                              resultAI[index]
+                                                                  ['name'],
+                                                              resultAI[index][
+                                                                  'description'],
+                                                              resultAI[index]['ingredients']
+                                                                      is List
+                                                                  ? resultAI[index]['ingredients']
+                                                                      .join(
+                                                                          ', ')
+                                                                  : resultAI[index][
+                                                                      'ingredients'],
+                                                              resultAI[index]['instructions']
+                                                                      is List
+                                                                  ? resultAI[index]['instructions']
+                                                                      .join(
+                                                                          ', ')
+                                                                  : resultAI[index][
+                                                                      'instructions'],
+                                                              resultAI[index][
+                                                                  'timetomake'],
+                                                              resultAI[index]
+                                                                  ['calories'],
+                                                              imageListPexels[index]);
+                                                        },
+                                                        child: Icon(
+                                                          Icons.favorite,
+                                                          color: db.isFavorite(
+                                                                  resultAI[
+                                                                          index]
+                                                                      ['name'])
+                                                              ? Colors.red
+                                                              : Colors.grey,
+                                                        ),
+                                                      )
                                                     ],
                                                   ),
                                                 ],
                                               ),
-                                              const SizedBox(height: 10.0),
-                                              Text(recipe['description'] ??
-                                                  'No Description'),
-                                              const SizedBox(height: 10.0),
-                                              const Text(
-                                                'Ingredients:',
-                                                style: TextStyle(
-                                                  fontSize: 18.0,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              ..._buildTextWidgets(
-                                                  recipe['ingredients']),
-                                              const SizedBox(height: 10.0),
-                                              const Text(
-                                                'Instructions:',
-                                                style: TextStyle(
-                                                  fontSize: 18.0,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              ..._buildTextWidgets(
-                                                  recipe['instructions']),
-                                              const SizedBox(height: 10),
-                                              const Text(
-                                                'Calories:',
-                                                style: TextStyle(
-                                                  fontSize: 18.0,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              Row(
-                                                children: [
-                                                  const Icon(
-                                                    CupertinoIcons.flame_fill,
-                                                    color: Colors.black,
-                                                    size: 15.0,
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 5,
-                                                  ),
-                                                  Text(recipe['calories']),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 10),
-                                              isLoadingImage
-                                                  ? LoadingAnimationWidget
-                                                      .hexagonDots(
-                                                      color: primaryColor,
-                                                      size: 80,
-                                                    )
-                                                  : ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              16.0),
-                                                      child: isImage
-                                                          ? Image.network(
-                                                              imageListPexels[
-                                                                  index],
-                                                              fit: BoxFit.cover,
-                                                            )
-                                                          : const Text(
-                                                              "No image found"),
-                                                    ),
-                                              const SizedBox(height: 10),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceEvenly,
-                                                children: [
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      SocialShare.shareOptions(
-                                                          recipeIngredients);
-                                                    },
-                                                    child: const Icon(
-                                                      Icons.list_alt,
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      SocialShare.shareOptions(
-                                                          stringRecipe);
-                                                    },
-                                                    child: const Icon(
-                                                      Icons.share,
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      SocialShare
-                                                          .copyToClipboard(
-                                                              text:
-                                                                  stringRecipe);
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                              const SnackBar(
-                                                        content: Text(
-                                                            "Copied to Clipboard.."),
-                                                      ));
-                                                    },
-                                                    child: const Icon(
-                                                      Icons.copy,
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      addToFavorite(
-                                                          resultAI[index]['id'],
-                                                          resultAI[index]
-                                                              ['name'],
-                                                          resultAI[index]
-                                                              ['description'],
-                                                          resultAI[index]['ingredients']
-                                                                  is List
-                                                              ? resultAI[index][
-                                                                      'ingredients']
-                                                                  .join(', ')
-                                                              : resultAI[index][
-                                                                  'ingredients'],
-                                                          resultAI[index]
-                                                                      ['instructions']
-                                                                  is List
-                                                              ? resultAI[index][
-                                                                      'instructions']
-                                                                  .join(', ')
-                                                              : resultAI[index][
-                                                                  'instructions'],
-                                                          resultAI[index]
-                                                              ['timetomake'],
-                                                          resultAI[index]
-                                                              ['calories'],
-                                                          imageListPexels[index]);
-                                                    },
-                                                    child: Icon(
-                                                      Icons.favorite,
-                                                      color: db.isFavorite(
-                                                              resultAI[index]
-                                                                  ['name'])
-                                                          ? Colors.red
-                                                          : Colors.grey,
-                                                    ),
-                                                  )
-                                                ],
-                                              ),
-                                            ],
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                    ]);
-                                  },
-                                ),
-                        ),
-                )
-              : Flexible(
-                  child: Center(
-                    child: Column(
-                      children: [
-                        const SizedBox(
-                          height: 90,
-                        ),
-                        IconButton(
-                          onPressed: () => _focusOnTextField(),
-                          icon: const Opacity(
-                            opacity: 0.3,
-                            child: Icon(
-                              Icons.control_point,
-                              size: 140,
+                                        ]);
+                                      },
+                                    ),
                             ),
-                          ),
+                    )
+                  : Flexible(
+                      child: Center(
+                        child: Column(
+                          children: [
+                            const SizedBox(
+                              height: 90,
+                            ),
+                            IconButton(
+                              onPressed: () => _focusOnTextField(),
+                              icon: const Opacity(
+                                opacity: 0.3,
+                                child: Icon(
+                                  Icons.control_point,
+                                  size: 140,
+                                ),
+                              ),
+                            ),
+                            const Opacity(
+                                opacity: 0.4,
+                                child: Text("Tap to add ingredients"))
+                          ],
                         ),
-                        const Opacity(
-                            opacity: 0.4, child: Text("Tap to add ingredients"))
-                      ],
-                    ),
-                  ),
-                )
+                      ),
+                    )
         ],
       ),
     );
