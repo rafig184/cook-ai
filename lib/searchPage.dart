@@ -16,7 +16,6 @@ import 'package:social_share/social_share.dart';
 import 'package:http/http.dart' as http;
 import 'package:translator/translator.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:vertex_ai/vertex_ai.dart';
 import 'package:flutter/services.dart';
 
 class SearchPage extends StatefulWidget {
@@ -48,7 +47,6 @@ class _SearchPageState extends State<SearchPage> {
   bool _isFieldEmpty = false;
   final ImagePicker _picker = ImagePicker();
   File? _image;
-  String _analysisResult = '';
 
   void _focusOnTextField() {
     FocusScope.of(context).requestFocus(_focusNode);
@@ -93,12 +91,9 @@ class _SearchPageState extends State<SearchPage> {
       setState(() {
         isAnalyzingImage = true;
       });
-      // Use the `google_generative_ai` package for Gemini integration
-      // final apiKey = Platform.environment[geminiAIKey];
 
       final model = GenerativeModel(
-        model:
-            'gemini-1.5-flash-latest', // Use gemini-pro-vision for image understanding
+        model: 'gemini-1.5-flash-latest',
         apiKey: geminiAIKey,
       );
 
@@ -405,6 +400,7 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                       Expanded(
                         child: TextField(
+                          style: const TextStyle(fontSize: 13),
                           controller: searchController,
                           maxLines: null,
                           focusNode: _focusNode,
