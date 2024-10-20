@@ -1,3 +1,4 @@
+import 'package:cookai/calories_calc.dart';
 import 'package:cookai/model/favorites_model.dart';
 import 'package:cookai/saved_recipes.dart';
 import 'package:cookai/searchPage.dart';
@@ -15,7 +16,11 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   int _selectedIndex = 0;
 
-  static List<Widget> _widgetOptions = <Widget>[SearchPage(), SavedRecipes()];
+  static List<Widget> _widgetOptions = <Widget>[
+    SearchPage(),
+    SavedRecipes(),
+    CaloriesCalcPage()
+  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -69,6 +74,17 @@ class _HomepageState extends State<Homepage> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.calculate),
+              title: const Text(
+                "Calories calculator",
+                textAlign: TextAlign.right,
+              ),
+              onTap: () {
+                _onItemTapped(2);
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.favorite),
               title: const Text(
                 "Saved Recipes",
@@ -83,7 +99,7 @@ class _HomepageState extends State<Homepage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: 400),
-                Text("Version 1.0.2"),
+                Text("Version 1.0.3"),
                 Text("Developed by RGDev Ⓒ 2024"),
               ],
             ),
