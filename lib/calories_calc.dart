@@ -325,17 +325,30 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.symmetric(
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
                               vertical: 20.0, horizontal: 10.0),
                           child: Text(
                             "Dish Calories Calculator",
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                              letterSpacing: 1.2, // Add a modern spacing effect
+                              fontSize:
+                                  24, // Increased font size for greater emphasis
+                              fontWeight: FontWeight
+                                  .w600, // Use a slightly lighter weight for a modern feel
+                              color: Colors
+                                  .black, // Darker green for a professional look
+                              letterSpacing:
+                                  1.5, // Increased letter spacing for elegance
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 3.0,
+                                  color: Colors.black.withOpacity(
+                                      0.2), // Subtle shadow for depth
+                                  offset: const Offset(
+                                      1.0, 1.0), // Position of the shadow
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -343,9 +356,10 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
                           "Select an option below",
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                            color:
+                                Colors.grey, // Subtle gray for secondary text
+                            fontStyle: FontStyle.italic, // Stylish touch
                           ),
                         ),
                         const SizedBox(height: 40),

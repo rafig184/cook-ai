@@ -427,7 +427,7 @@ class _SearchPageState extends State<SearchPage> {
                 fontSize: 24, // Increased font size for greater emphasis
                 fontWeight: FontWeight
                     .w600, // Use a slightly lighter weight for a modern feel
-                color: primaryColor, // Darker green for a professional look
+                color: Colors.black, // Darker green for a professional look
                 letterSpacing: 1.5, // Increased letter spacing for elegance
                 shadows: [
                   Shadow(
@@ -621,7 +621,7 @@ class _SearchPageState extends State<SearchPage> {
               : isAnalyzingImageError
                   ? Container()
                   : isSearch
-                      ? Container(
+                      ? Flexible(
                           child: isLoading
                               ? Padding(
                                   padding: const EdgeInsets.only(top: 150.0),
@@ -963,7 +963,7 @@ class _SearchPageState extends State<SearchPage> {
                                 style: TextStyle(
                                   fontSize: 20, // Larger text for emphasis
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.green, // Using green for text
+                                  color: Colors.black, // Using green for text
                                   letterSpacing: 1.2, // Spacing for modern look
                                 ),
                               ),
