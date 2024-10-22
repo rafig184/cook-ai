@@ -515,6 +515,10 @@ class _SearchPageState extends State<SearchPage> {
                           return Padding(
                             padding: const EdgeInsets.only(top: 5),
                             child: ElevatedButton(
+                              style: ButtonStyle(
+                                backgroundColor: WidgetStateProperty.all(
+                                    Color.fromARGB(255, 255, 197, 121)),
+                              ),
                               iconAlignment: IconAlignment.end,
                               onPressed: () {
                                 setState(() {
@@ -526,7 +530,10 @@ class _SearchPageState extends State<SearchPage> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(ingredient.toString()),
+                                  Text(
+                                    ingredient.toString(),
+                                    style: TextStyle(color: Colors.white),
+                                  ),
                                   const SizedBox(
                                     width: 5,
                                   ),
@@ -545,7 +552,8 @@ class _SearchPageState extends State<SearchPage> {
                       ? Container()
                       : ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
+                            backgroundColor:
+                                const Color.fromARGB(255, 89, 202, 147),
                             foregroundColor: Colors.white,
                             textStyle: const TextStyle(fontSize: 17),
                           ),
@@ -578,7 +586,7 @@ class _SearchPageState extends State<SearchPage> {
                   child: Column(
                     children: [
                       LoadingAnimationWidget.hexagonDots(
-                        color: primaryColor,
+                        color: const Color.fromARGB(255, 89, 202, 147),
                         size: 80,
                       ),
                       const SizedBox(
@@ -598,7 +606,8 @@ class _SearchPageState extends State<SearchPage> {
                                   child: Column(
                                     children: [
                                       LoadingAnimationWidget.hexagonDots(
-                                        color: primaryColor,
+                                        color: const Color.fromARGB(
+                                            255, 89, 202, 147),
                                         size: 80,
                                       ),
                                       const SizedBox(
@@ -751,8 +760,9 @@ class _SearchPageState extends State<SearchPage> {
                                                       isLoadingImage
                                                           ? LoadingAnimationWidget
                                                               .hexagonDots(
-                                                              color:
-                                                                  primaryColor,
+                                                              color: const Color
+                                                                  .fromARGB(255,
+                                                                  89, 202, 147),
                                                               size: 80,
                                                             )
                                                           : ClipRRect(

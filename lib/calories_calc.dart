@@ -137,162 +137,296 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.only(top: 20),
-        child: isAnalyzingImage
-            // Show loading animation when analyzing the image
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  LoadingAnimationWidget.hexagonDots(
-                    color: primaryColor,
-                    size: 80,
-                  ),
-                  const SizedBox(height: 20),
-                  const Text("Analyzing image..."),
-                ],
-              )
-            : resultAi.isNotEmpty
-                // Show the results when analysis is complete and data is available
-                ? Expanded(
-                    child: ListView.builder(
-                      itemCount: resultAi.length,
-                      itemBuilder: (context, index) {
-                        final result = resultAi[index];
-                        var title = result['title']?.toString() ?? 'No Title';
-                        var description = result['description']?.toString() ??
-                            'No Description';
-                        var calories =
-                            result['calories']?.toString() ?? 'No Calories';
-                        var fatPrecentage =
-                            result['fatPrecentage']?.toString() ?? 'No Fat';
-                        var protein =
-                            result['protein']?.toString() ?? 'No protein';
+          padding: const EdgeInsets.only(top: 20),
+          child: isAnalyzingImage
+              // Show loading animation when analyzing the image
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    LoadingAnimationWidget.hexagonDots(
+                      color: const Color.fromARGB(255, 89, 202, 147),
+                      size: 80,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text("Analyzing image..."),
+                  ],
+                )
+              : resultAi.isNotEmpty
+                  ? Expanded(
+                      child: ListView.builder(
+                        itemCount: resultAi.length,
+                        itemBuilder: (context, index) {
+                          final result = resultAi[index];
+                          var title = result['title']?.toString() ?? 'No Title';
+                          var description = result['description']?.toString() ??
+                              'No Description';
+                          var calories =
+                              result['calories']?.toString() ?? 'No Calories';
+                          var fatPrecentage =
+                              result['fatPrecentage']?.toString() ?? 'No Fat';
+                          var protein =
+                              result['protein']?.toString() ?? 'No Protein';
 
-                        return Card(
-                          margin: const EdgeInsets.all(10.0),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        title,
-                                        style: const TextStyle(
-                                          fontSize: 20.0,
-                                          fontWeight: FontWeight.bold,
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            elevation: 8, // More elevation for depth
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  25.0), // Softer rounded corners
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Title Row with Close Button
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          title,
+                                          style: const TextStyle(
+                                            fontSize: 22.0,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                          softWrap: true,
                                         ),
-                                        softWrap: true,
+                                      ),
+                                      IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            resultAi.clear();
+                                          });
+                                        },
+                                        icon: const Icon(
+                                          Icons.close_rounded,
+                                          color: Colors.redAccent,
+                                          size: 24,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12.0),
+                                  // Description Text
+                                  Text(
+                                    description,
+                                    style: TextStyle(
+                                      fontSize: 16.0,
+                                      color: Colors.grey.shade600,
+                                      height:
+                                          1.4, // Adjust line height for better readability
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16.0),
+                                  // Nutritional Information Section
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "$calories kcal",
+                                            style: const TextStyle(
+                                              fontSize: 18.0,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors
+                                                  .orangeAccent, // Highlight color
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4.0),
+                                          Text(
+                                            "Calories",
+                                            style: TextStyle(
+                                              fontSize: 14.0,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "$fatPrecentage%",
+                                            style: const TextStyle(
+                                              fontSize: 18.0,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.lightBlueAccent,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4.0),
+                                          Text(
+                                            "Fat",
+                                            style: TextStyle(
+                                              fontSize: 14.0,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "$protein g",
+                                            style: const TextStyle(
+                                              fontSize: 18.0,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color.fromARGB(
+                                                  255, 89, 202, 147),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4.0),
+                                          Text(
+                                            "Protein",
+                                            style: TextStyle(
+                                              fontSize: 14.0,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16.0),
+                                  // Image Display (if available)
+                                  if (_image != null)
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                          25.0), // Rounded image
+                                      child: Image.file(
+                                        _image!,
+                                        fit: BoxFit.cover,
+                                        height: 300, // Image height
+                                        width: double.infinity, // Full width
                                       ),
                                     ),
-                                    IconButton(
-                                      // iconSize: 80,
-                                      onPressed: () {
-                                        setState(() {
-                                          resultAi.clear();
-                                        });
-                                      },
-                                      icon: Icon(
-                                        Icons.close_rounded,
-                                        color: Colors.grey.shade500,
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+
+                  // Show the initial UI with image selection options
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(
+                              vertical: 20.0, horizontal: 10.0),
+                          child: Text(
+                            "Dish Calories Calculator",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                              letterSpacing: 1.2, // Add a modern spacing effect
+                            ),
+                          ),
+                        ),
+                        const Text(
+                          "Select an option below",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            // Camera Button
+                            GestureDetector(
+                              onTap: () => _openCamera(),
+                              child: Container(
+                                padding: const EdgeInsets.all(20.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.shade300,
+                                      blurRadius: 10,
+                                      offset: Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: const Column(
+                                  children: [
+                                    Icon(
+                                      Icons.camera_alt_rounded,
+                                      size: 70,
+                                      color: Colors
+                                          .blueAccent, // Modern color for the icon
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      "Camera",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black87,
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 10.0),
-                                Text(description),
-                                const SizedBox(height: 15.0),
-                                Text(
-                                  "Calories : $calories",
-                                  style: const TextStyle(
-                                    fontSize: 17.0,
-                                    // fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 15.0),
-                                Text(
-                                  "Fat Precentage : $fatPrecentage%",
-                                  style: const TextStyle(
-                                    fontSize: 17.0,
-                                    // fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 15.0),
-                                Text(
-                                  "Protein : $protein g",
-                                  style: const TextStyle(
-                                    fontSize: 17.0,
-                                    // fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 15.0),
-                                if (_image != null)
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(
-                                        20.0), // Adjust the radius as needed
-                                    child: Image.file(
-                                      _image!,
-                                      fit: BoxFit.cover,
-                                      height: 300, // Adjust the height
-                                      width: double
-                                          .infinity, // Make it take full width
+                              ),
+                            ),
+                            // Gallery Button
+                            GestureDetector(
+                              onTap: () => getImageFromGallery(),
+                              child: Container(
+                                padding: const EdgeInsets.all(20.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.shade300,
+                                      blurRadius: 10,
+                                      offset: Offset(0, 5),
                                     ),
-                                  )
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  )
-                // Show the initial UI with image selection options
-                : Column(
-                    children: [
-                      const Text(
-                        "Calculate your dish calories using a picture",
-                        textAlign: TextAlign.center,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 60),
-                        child: Column(
-                          children: [
-                            IconButton(
-                              iconSize: 80,
-                              onPressed: () => _openCamera(),
-                              icon: Icon(
-                                Icons.camera_alt_rounded,
-                                color: Colors.grey.shade500,
+                                  ],
+                                ),
+                                child: const Column(
+                                  children: [
+                                    Icon(
+                                      Icons.image_rounded,
+                                      size: 70,
+                                      color: Color.fromARGB(255, 89, 202,
+                                          147), // Modern color for the icon
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      "Gallery",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            // const SizedBox(height: 5),
-                            const Text("Camera"),
                           ],
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 60),
-                        child: Column(
-                          children: [
-                            IconButton(
-                              iconSize: 80,
-                              onPressed: () => getImageFromGallery(),
-                              icon: Icon(
-                                Icons.image_rounded,
-                                color: Colors.grey.shade500,
-                              ),
-                            ),
-                            // const SizedBox(height: 5),
-                            const Text("Gallery"),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-      ),
+                      ],
+                    )),
     );
   }
 }
