@@ -8,7 +8,6 @@ import 'package:cookai/model/favorites_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'dart:convert';
-import 'package:cookai/utils/colors.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
