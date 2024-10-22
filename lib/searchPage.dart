@@ -69,7 +69,10 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<void> _openCamera() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    final pickedFile = await _picker.pickImage(
+      source: ImageSource.camera,
+      preferredCameraDevice: CameraDevice.rear,
+    );
 
     if (pickedFile != null) {
       setState(() {
@@ -337,6 +340,8 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {
       isSearch = false;
       ingredientsList.clear();
+      isAnalyzingImage = false;
+      isAnalyzingImageError = false;
     });
   }
 
@@ -395,7 +400,12 @@ class _SearchPageState extends State<SearchPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                clearAll();
+              });
+            },
             child: const Text('OK'),
           ),
         ],
@@ -409,15 +419,35 @@ class _SearchPageState extends State<SearchPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: Text(
+              "Create Recipes with AI",
+              style: TextStyle(
+                fontSize: 24, // Increased font size for greater emphasis
+                fontWeight: FontWeight
+                    .w600, // Use a slightly lighter weight for a modern feel
+                color: primaryColor, // Darker green for a professional look
+                letterSpacing: 1.5, // Increased letter spacing for elegance
+                shadows: [
+                  Shadow(
+                    blurRadius: 3.0,
+                    color: Colors.black
+                        .withOpacity(0.2), // Subtle shadow for depth
+                    offset: const Offset(1.0, 1.0), // Position of the shadow
+                  ),
+                ],
+              ),
+            ),
+          ),
           const Padding(
             padding: EdgeInsets.only(top: 5),
             child: Text(
-              "Add ingredients to create recipes with AI",
+              "Type your ingredients or take a picture",
               style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 18.0,
-                fontWeight: FontWeight.w400,
-                color: Colors.blueGrey,
+                fontSize: 14,
+                color: Colors.grey, // Subtle gray for secondary text
+                fontStyle: FontStyle.italic, // Stylish touch
               ),
             ),
           ),
@@ -493,14 +523,6 @@ class _SearchPageState extends State<SearchPage> {
                         icon: const Icon(Icons.add, color: Colors.grey),
                         onPressed: () {
                           addIngredients(searchController.text);
-                          searchController.clear();
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.camera_alt_rounded,
-                            color: Colors.grey),
-                        onPressed: () {
-                          _openCamera();
                           searchController.clear();
                         },
                       ),
@@ -586,7 +608,7 @@ class _SearchPageState extends State<SearchPage> {
                   child: Column(
                     children: [
                       LoadingAnimationWidget.hexagonDots(
-                        color: const Color.fromARGB(255, 89, 202, 147),
+                        color: Colors.blueAccent.shade400,
                         size: 80,
                       ),
                       const SizedBox(
@@ -606,8 +628,7 @@ class _SearchPageState extends State<SearchPage> {
                                   child: Column(
                                     children: [
                                       LoadingAnimationWidget.hexagonDots(
-                                        color: const Color.fromARGB(
-                                            255, 89, 202, 147),
+                                        color: Colors.blueAccent.shade400,
                                         size: 80,
                                       ),
                                       const SizedBox(
@@ -888,27 +909,75 @@ class _SearchPageState extends State<SearchPage> {
                                 ),
                         )
                       : Flexible(
-                          child: Center(
-                            child: Column(
-                              children: [
-                                const SizedBox(
-                                  height: 90,
-                                ),
-                                IconButton(
-                                  onPressed: () => _focusOnTextField(),
-                                  icon: const Opacity(
-                                    opacity: 0.3,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment
+                                .start, // Keep the content higher
+                            children: [
+                              const SizedBox(
+                                  height: 60), // Space above the button
+                              GestureDetector(
+                                onTap: () => {
+                                  _openCamera(),
+                                  searchController.clear()
+                                }, // Function to open the camera
+                                child: AnimatedContainer(
+                                  duration: const Duration(
+                                      milliseconds: 300), // Smooth animation
+                                  width: 140,
+                                  height: 140,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        Colors.lightBlueAccent,
+                                        Colors.blueAccent.shade400
+                                      ],
+                                      center: Alignment.center,
+                                      radius:
+                                          0.85, // Radial gradient for a vibrant look
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.blue
+                                            .withOpacity(0.3), // Soft shadow
+                                        blurRadius: 20.0,
+                                        spreadRadius: 2.0,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Center(
                                     child: Icon(
-                                      Icons.control_point,
-                                      size: 140,
+                                      Icons.camera_alt,
+                                      size:
+                                          100, // Large icon size for visibility
+                                      color: Colors
+                                          .white, // Icon color for contrast
                                     ),
                                   ),
                                 ),
-                                const Opacity(
-                                    opacity: 0.4,
-                                    child: Text("Tap to add ingredients"))
-                              ],
-                            ),
+                              ),
+                              const SizedBox(
+                                  height: 30), // Space below the button
+                              const Text(
+                                "Take a picture",
+                                style: TextStyle(
+                                  fontSize: 20, // Larger text for emphasis
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green, // Using green for text
+                                  letterSpacing: 1.2, // Spacing for modern look
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              const Text(
+                                "Of the ingredients",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors
+                                      .grey, // Subtle gray for secondary text
+                                  fontStyle: FontStyle.italic, // Stylish touch
+                                ),
+                              ),
+                            ],
                           ),
                         )
         ],

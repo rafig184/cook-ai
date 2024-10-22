@@ -38,7 +38,10 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
   }
 
   Future<void> _openCamera() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    final pickedFile = await _picker.pickImage(
+      source: ImageSource.camera,
+      preferredCameraDevice: CameraDevice.rear,
+    );
 
     if (pickedFile != null) {
       setState(() {
@@ -144,7 +147,7 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     LoadingAnimationWidget.hexagonDots(
-                      color: const Color.fromARGB(255, 89, 202, 147),
+                      color: Colors.blueAccent.shade400,
                       size: 80,
                     ),
                     const SizedBox(height: 20),
