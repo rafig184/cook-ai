@@ -908,75 +908,79 @@ class _SearchPageState extends State<SearchPage> {
                                 ),
                         )
                       : Flexible(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment
-                                .start, // Keep the content higher
-                            children: [
-                              const SizedBox(
-                                  height: 60), // Space above the button
-                              GestureDetector(
-                                onTap: () => {
-                                  _openCamera(),
-                                  searchController.clear()
-                                }, // Function to open the camera
-                                child: AnimatedContainer(
-                                  duration: const Duration(
-                                      milliseconds: 300), // Smooth animation
-                                  width: 140,
-                                  height: 140,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: RadialGradient(
-                                      colors: [
-                                        Colors.lightBlueAccent,
-                                        Colors.blueAccent.shade400
-                                      ],
-                                      center: Alignment.center,
-                                      radius:
-                                          0.85, // Radial gradient for a vibrant look
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.blue
-                                            .withOpacity(0.3), // Soft shadow
-                                        blurRadius: 20.0,
-                                        spreadRadius: 2.0,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment
+                                  .start, // Keep the content higher
+                              children: [
+                                const SizedBox(
+                                    height: 60), // Space above the button
+                                GestureDetector(
+                                  onTap: () => {
+                                    _openCamera(),
+                                    searchController.clear()
+                                  }, // Function to open the camera
+                                  child: AnimatedContainer(
+                                    duration: const Duration(
+                                        milliseconds: 300), // Smooth animation
+                                    width: 140,
+                                    height: 140,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: RadialGradient(
+                                        colors: [
+                                          Colors.lightBlueAccent,
+                                          Colors.blueAccent.shade400
+                                        ],
+                                        center: Alignment.center,
+                                        radius:
+                                            0.85, // Radial gradient for a vibrant look
                                       ),
-                                    ],
-                                  ),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.camera_alt,
-                                      size:
-                                          100, // Large icon size for visibility
-                                      color: Colors
-                                          .white, // Icon color for contrast
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.blue
+                                              .withOpacity(0.3), // Soft shadow
+                                          blurRadius: 20.0,
+                                          spreadRadius: 2.0,
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.camera_alt,
+                                        size:
+                                            100, // Large icon size for visibility
+                                        color: Colors
+                                            .white, // Icon color for contrast
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(
-                                  height: 30), // Space below the button
-                              const Text(
-                                "Take a picture",
-                                style: TextStyle(
-                                  fontSize: 20, // Larger text for emphasis
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black, // Using green for text
-                                  letterSpacing: 1.2, // Spacing for modern look
+                                const SizedBox(
+                                    height: 30), // Space below the button
+                                const Text(
+                                  "Take a picture",
+                                  style: TextStyle(
+                                    fontSize: 20, // Larger text for emphasis
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black, // Using green for text
+                                    letterSpacing:
+                                        1.2, // Spacing for modern look
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              const Text(
-                                "Of the ingredients",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors
-                                      .grey, // Subtle gray for secondary text
-                                  fontStyle: FontStyle.italic, // Stylish touch
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "Of the ingredients",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors
+                                        .grey, // Subtle gray for secondary text
+                                    fontStyle:
+                                        FontStyle.italic, // Stylish touch
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         )
         ],
