@@ -73,7 +73,7 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
       );
 
       const promptText =
-          'what is the dish that you see in the picture and how many calories it containes?.in JSON format, without adding "```json" at the beginning or the first and last {}. Always in this format: [{"title": "title", "description": "description", "calories": "calories", "fatPrecentage": "fatPrecentage", "protein": "protein"}], calories fatPrecentage and protein must be a number . if the image doesnt contain food or there is something with the quality return the word "Something went wrong" and then the reason for the error.';
+          'what is the dish that you see in the picture and how many calories it containes?.in JSON format, without adding "```json" at the beginning or the first and last {}. Always in this format: [{"title": "title", "description": "description", "calories": "calories", "fatPrecentage": "fatPrecentage", "protein": "protein", "carbs": "carbs"}], calories fatPrecentage and protein must be a number . if the image doesnt contain food or there is something with the quality return the word "Something went wrong" and then the reason for the error.';
       final prompt = TextPart(promptText);
 
       // Read image bytes efficiently
@@ -168,6 +168,7 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
                               result['fatPrecentage']?.toString() ?? 'No Fat';
                           var protein =
                               result['protein']?.toString() ?? 'No Protein';
+                          var carbs = result['carbs']?.toString() ?? 'No Carbs';
 
                           return Card(
                             margin: const EdgeInsets.symmetric(
@@ -279,7 +280,7 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
                                             CrossAxisAlignment.center,
                                         children: [
                                           Text(
-                                            "$protein g",
+                                            "${protein}g",
                                             style: const TextStyle(
                                               fontSize: 18.0,
                                               fontWeight: FontWeight.bold,
@@ -290,6 +291,29 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
                                           const SizedBox(height: 4.0),
                                           Text(
                                             "Protein",
+                                            style: TextStyle(
+                                              fontSize: 14.0,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "${carbs}g",
+                                            style: const TextStyle(
+                                              fontSize: 18.0,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color.fromARGB(
+                                                  255, 151, 89, 202),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4.0),
+                                          Text(
+                                            "Carbs",
                                             style: TextStyle(
                                               fontSize: 14.0,
                                               color: Colors.grey.shade600,
