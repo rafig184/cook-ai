@@ -176,6 +176,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  get:
+    dependency: "direct main"
+    description:
+      name: get
+      sha256: e4e7335ede17452b391ed3b2ede016545706c01a02292a6c97619705e7d2a85e
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.6.6"
   google_fonts:
     dependency: "direct main"
     description:
@@ -509,6 +517,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  stylish_bottom_bar:
+    dependency: "direct main"
+    description:
+      name: stylish_bottom_bar
+      sha256: ca72557a5bd8f44caae9017eb3a73002e9189d7a9d2fac598fa55be13724f32b
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   term_glyph:
     dependency: transitive
     description:

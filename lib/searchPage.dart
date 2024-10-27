@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:cookai/controller/states_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_langdetect/flutter_langdetect.dart' as langdetect;
@@ -16,6 +17,7 @@ import 'package:http/http.dart' as http;
 import 'package:translator/translator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -48,6 +50,7 @@ class _SearchPageState extends State<SearchPage> {
   final ImagePicker _picker = ImagePicker();
   File? _image;
   String imageErrorResponse = "";
+  StatesController statesController = Get.find();
 
   void _focusOnTextField() {
     FocusScope.of(context).requestFocus(_focusNode);
@@ -58,6 +61,9 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     db = FavoriteDatabase();
     initializeDatabase();
+    if (statesController.isCameraButton == true.obs) {
+      _openCamera();
+    }
   }
 
   @override
@@ -75,7 +81,7 @@ class _SearchPageState extends State<SearchPage> {
 
     if (pickedFile != null) {
       setState(() {
-        ingredientsList.clear();
+        // ingredientsList.clear();
         resultAI.clear();
         _image = File(pickedFile.path);
         isAnalyzingImageError = false;
@@ -126,8 +132,9 @@ class _SearchPageState extends State<SearchPage> {
           showErrorDialog(response.text.toString());
         });
       } else {
+        var ingredientsResponse = response.text!.split(',');
         setState(() {
-          ingredientsList = response.text!.split(',');
+          ingredientsList.addAll(ingredientsResponse);
           print(ingredientsList);
           isIngredientsVisible = true;
         });
@@ -253,6 +260,7 @@ class _SearchPageState extends State<SearchPage> {
     } finally {
       setState(() {
         isLoading = false;
+        ingredientsList.clear();
       });
     }
   }
@@ -341,6 +349,7 @@ class _SearchPageState extends State<SearchPage> {
       ingredientsList.clear();
       isAnalyzingImage = false;
       isAnalyzingImageError = false;
+      isIngredientsVisible = false;
     });
   }
 
@@ -455,123 +464,139 @@ class _SearchPageState extends State<SearchPage> {
                 left: 15.0, right: 15.0, top: 15.0, bottom: 15.0),
             child: Column(
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.grey),
-                        onPressed: () {
-                          searchController.clear();
-                          clearAll();
-                          setState(() {});
-                        },
-                      ),
-                      Expanded(
-                        child: TextField(
-                          style: const TextStyle(fontSize: 13),
-                          controller: searchController,
-                          maxLines: null,
-                          focusNode: _focusNode,
-                          decoration: InputDecoration(
-                            hintText: "Press + after each ingredient..",
-                            border: InputBorder.none,
-                            errorText: _isFieldEmpty
-                                ? 'Please add ingredients..'
-                                : isIngredientInclude
-                                    ? 'Ingredient already included..'
-                                    : null,
-                            errorBorder: _isFieldEmpty
-                                ? const UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.red),
-                                  )
-                                : InputBorder.none,
-                            focusedErrorBorder: _isFieldEmpty ||
-                                    isIngredientInclude
-                                ? const UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.red),
-                                  )
-                                : InputBorder.none,
-                          ),
-                          textInputAction: TextInputAction.done,
-                          onChanged: (value) {
-                            setState(() {
-                              setState(() {
-                                _isFieldEmpty = value.isEmpty;
-                                isIngredientInclude = false;
-                              });
-                            });
-                          },
-                          onSubmitted: (value) {
-                            setState(() {
-                              _isFieldEmpty = value.isEmpty;
-                            });
-                            if (!_isFieldEmpty) {
-                              addIngredients(searchController.text);
-                              searchController.clear();
-                            }
-                            FocusScope.of(context).requestFocus(_focusNode);
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          onPressed: () {
+                            searchController.clear();
+                            clearAll();
+                            setState(() {});
                           },
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add, color: Colors.grey),
-                        onPressed: () {
-                          addIngredients(searchController.text);
-                          searchController.clear();
-                        },
-                      ),
-                    ],
+                        Expanded(
+                          child: TextField(
+                            style: const TextStyle(fontSize: 13),
+                            controller: searchController,
+                            maxLines: null,
+                            focusNode: _focusNode,
+                            decoration: InputDecoration(
+                              hintText: "Press + after each ingredient..",
+                              border: InputBorder.none,
+                              errorText: _isFieldEmpty
+                                  ? 'Please add ingredients..'
+                                  : isIngredientInclude
+                                      ? 'Ingredient already included..'
+                                      : null,
+                              errorBorder: _isFieldEmpty
+                                  ? const UnderlineInputBorder(
+                                      borderSide: BorderSide(color: Colors.red),
+                                    )
+                                  : InputBorder.none,
+                              focusedErrorBorder: _isFieldEmpty ||
+                                      isIngredientInclude
+                                  ? const UnderlineInputBorder(
+                                      borderSide: BorderSide(color: Colors.red),
+                                    )
+                                  : InputBorder.none,
+                            ),
+                            textInputAction: TextInputAction.done,
+                            onChanged: (value) {
+                              setState(() {
+                                setState(() {
+                                  _isFieldEmpty = value.isEmpty;
+                                  isIngredientInclude = false;
+                                });
+                              });
+                            },
+                            onSubmitted: (value) {
+                              setState(() {
+                                _isFieldEmpty = value.isEmpty;
+                              });
+                              if (!_isFieldEmpty) {
+                                addIngredients(searchController.text);
+                                searchController.clear();
+                              }
+                              FocusScope.of(context).requestFocus(_focusNode);
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add, color: Colors.grey),
+                          onPressed: () {
+                            addIngredients(searchController.text);
+                            searchController.clear();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 isIngredientsVisible
-                    ? Wrap(
-                        spacing: 5,
-                        runSpacing: 5,
-                        children: ingredientsList.map<Widget>((ingredient) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 5),
-                            child: ElevatedButton(
-                              style: ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all(
-                                    Color.fromARGB(255, 255, 197, 121)),
+                    ? ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxHeight:
+                              170, // Set the maximum height you want here
+                        ),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Wrap(
+                                spacing: 5,
+                                runSpacing: 5,
+                                children:
+                                    ingredientsList.map<Widget>((ingredient) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 5),
+                                    child: ElevatedButton(
+                                      style: ButtonStyle(
+                                        backgroundColor:
+                                            WidgetStateProperty.all(
+                                          const Color.fromARGB(
+                                              255, 255, 197, 121),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          ingredientsList.remove(ingredient);
+                                        });
+                                      },
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            ingredient.toString(),
+                                            style: const TextStyle(
+                                                color: Colors.white),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          const Icon(Icons.close,
+                                              color: Colors.grey, size: 17),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
                               ),
-                              iconAlignment: IconAlignment.end,
-                              onPressed: () {
-                                setState(() {
-                                  ingredientsList.remove(ingredient);
-                                });
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    ingredient.toString(),
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  const Icon(Icons.close,
-                                      color: Colors.grey, size: 17),
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                            ],
+                          ),
+                        ),
                       )
                     : Container(),
-                Padding(
-                  padding: const EdgeInsets.only(top: 7),
-                  child: ingredientsList.isEmpty
-                      ? Container()
-                      : ElevatedButton(
+                ingredientsList.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 5),
+                        child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 const Color.fromARGB(255, 89, 202, 147),
@@ -585,19 +610,14 @@ class _SearchPageState extends State<SearchPage> {
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                "Create Recipes",
-                              ),
-                              SizedBox(
-                                width: 7,
-                              ),
-                              Icon(
-                                Icons.send_rounded,
-                                size: 18,
-                              )
+                              Text("Create Recipes"),
+                              SizedBox(width: 7),
+                              Icon(Icons.send_rounded, size: 18),
                             ],
-                          )),
-                ),
+                          ),
+                        ),
+                      )
+                    : Container(),
               ],
             ),
           ),
@@ -914,7 +934,7 @@ class _SearchPageState extends State<SearchPage> {
                                   .start, // Keep the content higher
                               children: [
                                 const SizedBox(
-                                    height: 60), // Space above the button
+                                    height: 13), // Space above the button
                                 GestureDetector(
                                   onTap: () => {
                                     _openCamera(),

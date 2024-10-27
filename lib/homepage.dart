@@ -1,10 +1,14 @@
 import 'package:cookai/calories_calc.dart';
+import 'package:cookai/controller/states_controller.dart';
 import 'package:cookai/model/favorites_model.dart';
 import 'package:cookai/saved_recipes.dart';
 import 'package:cookai/searchPage.dart';
 import 'package:cookai/utils/colors.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -16,10 +20,12 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   int _selectedIndex = 0;
 
+  StatesController statesController = Get.put(StatesController());
+
   static List<Widget> _widgetOptions = <Widget>[
     SearchPage(),
     SavedRecipes(),
-    CaloriesCalcPage()
+    CaloriesCalcPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -45,6 +51,7 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
+      extendBody: true,
       appBar: AppBar(
         toolbarHeight: 120,
         backgroundColor: backgroundColor,
@@ -87,7 +94,7 @@ class _HomepageState extends State<Homepage> {
             ListTile(
               leading: const Icon(Icons.favorite),
               title: const Text(
-                "Saved Recipes",
+                "Favorite Recipes",
                 textAlign: TextAlign.right,
               ),
               onTap: () {
@@ -107,6 +114,80 @@ class _HomepageState extends State<Homepage> {
         ),
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: StylishBottomBar(
+        option: AnimatedBarOptions(
+          // iconSize: 20,
+          barAnimation: BarAnimation.blink,
+          iconStyle: IconStyle.Default,
+
+          opacity: 0.3,
+        ),
+        // option: DotBarOptions(
+        //   dotStyle: DotStyle.tile,
+        //   inkColor: secondaryColor,
+
+        // ),
+        items: [
+          BottomBarItem(
+            icon: const Icon(
+              Icons.house_outlined,
+            ),
+            selectedIcon: const Icon(Icons.house),
+            selectedColor: secondaryColor,
+            unSelectedColor: Colors.grey,
+            title: const Text('Home'),
+            // badgePadding: const EdgeInsets.only(left: 50, right: 50),
+          ),
+          BottomBarItem(
+            icon: const Icon(
+              Icons.favorite_border,
+            ),
+            selectedIcon: const Icon(Icons.favorite),
+            selectedColor: secondaryColor,
+            unSelectedColor: Colors.grey,
+            title: const Text('Favorites'),
+            // badgePadding: const EdgeInsets.only(left: 50, right: 50),
+          ),
+          BottomBarItem(
+            icon: const Icon(
+              Icons.calculate_outlined,
+            ),
+            selectedIcon: const Icon(
+              Icons.calculate,
+            ),
+            selectedColor: secondaryColor,
+            title: const Text('Calculator'),
+          ),
+        ],
+        hasNotch: true,
+        fabLocation: StylishBarFabLocation.end,
+        currentIndex: _selectedIndex,
+        notchStyle: NotchStyle.circle,
+        onTap: (index) {
+          if (index == _selectedIndex) return;
+
+          setState(() {
+            _selectedIndex = index;
+            statesController.cameraButtonChangeFalse();
+            _onItemTapped(index);
+          });
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _onItemTapped(0);
+            statesController.cameraButtonChangeTrue();
+          });
+        },
+        backgroundColor: secondaryColor,
+        shape: const CircleBorder(),
+        child: const Icon(
+          CupertinoIcons.camera_fill,
+          color: Colors.white,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 }
