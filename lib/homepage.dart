@@ -135,7 +135,10 @@ class _HomepageState extends State<Homepage> {
             selectedIcon: const Icon(Icons.house),
             selectedColor: secondaryColor,
             unSelectedColor: Colors.grey,
-            title: const Text('Home'),
+            title: const Text(
+              'Home',
+              style: TextStyle(fontWeight: FontWeight.w200),
+            ),
             // badgePadding: const EdgeInsets.only(left: 50, right: 50),
           ),
           BottomBarItem(
@@ -145,7 +148,10 @@ class _HomepageState extends State<Homepage> {
             selectedIcon: const Icon(Icons.favorite),
             selectedColor: secondaryColor,
             unSelectedColor: Colors.grey,
-            title: const Text('Favorites'),
+            title: const Text(
+              'Favorites',
+              style: TextStyle(fontWeight: FontWeight.w200),
+            ),
             // badgePadding: const EdgeInsets.only(left: 50, right: 50),
           ),
           BottomBarItem(
@@ -156,7 +162,10 @@ class _HomepageState extends State<Homepage> {
               Icons.calculate,
             ),
             selectedColor: secondaryColor,
-            title: const Text('Calculator'),
+            title: const Text(
+              'Calculator',
+              style: TextStyle(fontWeight: FontWeight.w200),
+            ),
           ),
         ],
         hasNotch: true,

@@ -1,10 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:cookai/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+
+class ChartData {
+  final String x;
+  final int y;
+
+  ChartData(this.x, this.y);
+}
 
 class CaloriesCalcPage extends StatefulWidget {
   const CaloriesCalcPage({super.key});
@@ -22,6 +32,22 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
   String imageErrorResponse = "";
   // String resultAi = "";
   List<dynamic> resultAi = <dynamic>[];
+  String selectedDataTitle = '';
+  int selectedDataValue = 0;
+  List<ChartData> chartData = [];
+
+  void updateChartData(int index) {
+    final result = resultAi[index];
+    int fat = int.tryParse(result['fatInGrams']?.toString() ?? '0') ?? 0;
+    int protein = int.tryParse(result['protein']?.toString() ?? '0') ?? 0;
+    int carbs = int.tryParse(result['carbs']?.toString() ?? '0') ?? 0;
+
+    chartData = [
+      ChartData('Fat', fat),
+      ChartData('Protein', protein),
+      ChartData('Carbs', carbs),
+    ];
+  }
 
   Future getImageFromGallery() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -73,7 +99,7 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
       );
 
       const promptText =
-          'what is the dish that you see in the picture and how many calories it containes?.in JSON format, without adding "```json" at the beginning or the first and last {}. Always in this format: [{"title": "title", "description": "description", "calories": "calories", "fatPrecentage": "fatPrecentage", "protein": "protein", "carbs": "carbs"}], calories fatPrecentage and protein must be a number . if the image doesnt contain food or there is something with the quality return the word "Something went wrong" and then the reason for the error.';
+          'what is the dish that you see in the picture and how many calories it containes?.in JSON format, without adding "```json" at the beginning or the first and last {}. Always in this format: [{"title": "title", "description": "description", "calories": "calories", "fatInGrams": "fatInGrams", "protein": "protein", "carbs": "carbs"}], calories fatInGrams and protein must be a number . if the image doesnt contain food or there is something with the quality return the word "Something went wrong" and then the reason for the error.';
       final prompt = TextPart(promptText);
 
       // Read image bytes efficiently
@@ -154,193 +180,339 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
                   ],
                 )
               : resultAi.isNotEmpty
-                  ? Expanded(
-                      child: ListView.builder(
-                        itemCount: resultAi.length,
-                        itemBuilder: (context, index) {
-                          final result = resultAi[index];
-                          var title = result['title']?.toString() ?? 'No Title';
-                          var description = result['description']?.toString() ??
-                              'No Description';
-                          var calories =
-                              result['calories']?.toString() ?? 'No Calories';
-                          var fatPrecentage =
-                              result['fatPrecentage']?.toString() ?? 'No Fat';
-                          var protein =
-                              result['protein']?.toString() ?? 'No Protein';
-                          var carbs = result['carbs']?.toString() ?? 'No Carbs';
+                  ? Padding(
+                      padding: const EdgeInsets.all(1.0),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: resultAi.length,
+                              itemBuilder: (context, index) {
+                                final result = resultAi[index];
+                                updateChartData(index);
+                                var title =
+                                    result['title']?.toString() ?? 'No Title';
+                                var description =
+                                    result['description']?.toString() ??
+                                        'No Description';
+                                var calories = result['calories']?.toString() ??
+                                    'No Calories';
+                                var fatInGrams =
+                                    result['fatInGrams']?.toString() ??
+                                        'No Fat';
+                                var protein = result['protein']?.toString() ??
+                                    'No Protein';
+                                var carbs =
+                                    result['carbs']?.toString() ?? 'No Carbs';
 
-                          return Card(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 10.0),
-                            elevation: 8, // More elevation for depth
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  25.0), // Softer rounded corners
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Title Row with Close Button
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          title,
-                                          style: const TextStyle(
-                                            fontSize: 22.0,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
-                                          ),
-                                          softWrap: true,
-                                        ),
-                                      ),
-                                      IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            resultAi.clear();
-                                          });
-                                        },
-                                        icon: const Icon(
-                                          Icons.close_rounded,
-                                          color: Colors.redAccent,
-                                          size: 24,
-                                        ),
-                                      ),
-                                    ],
+                                return Card(
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 16.0, vertical: 10.0),
+                                  elevation: 8, // More elevation for depth
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        25.0), // Softer rounded corners
                                   ),
-                                  const SizedBox(height: 12.0),
-                                  // Description Text
-                                  Text(
-                                    description,
-                                    style: TextStyle(
-                                      fontSize: 16.0,
-                                      color: Colors.grey.shade600,
-                                      height:
-                                          1.4, // Adjust line height for better readability
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // Title Row with Close Button
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                title,
+                                                style: const TextStyle(
+                                                  fontSize: 22.0,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black87,
+                                                ),
+                                                softWrap: true,
+                                              ),
+                                            ),
+                                            IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  resultAi.clear();
+                                                });
+                                              },
+                                              icon: const Icon(
+                                                Icons.close_rounded,
+                                                color: Colors.redAccent,
+                                                size: 24,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 12.0),
+                                        // Description Text
+                                        Text(
+                                          description,
+                                          style: TextStyle(
+                                            fontSize: 16.0,
+                                            color: Colors.grey.shade600,
+                                            height:
+                                                1.4, // Adjust line height for better readability
+                                          ),
+                                        ),
+                                        // const SizedBox(height: 2.0),
+                                        // Nutritional Information Section
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "$calories kcal",
+                                                      style: const TextStyle(
+                                                        fontSize: 15.0,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors
+                                                            .orangeAccent, // Highlight color
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4.0),
+                                                    Text(
+                                                      "Calories",
+                                                      style: TextStyle(
+                                                        fontSize: 14.0,
+                                                        color: Colors
+                                                            .grey.shade600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const Divider(
+                                                  color: Colors.grey,
+                                                  thickness: 2,
+                                                  indent: 16,
+                                                  endIndent: 16,
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "${fatInGrams}g",
+                                                      style: const TextStyle(
+                                                        fontSize: 15.0,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors
+                                                            .lightBlueAccent,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4.0),
+                                                    Text(
+                                                      "Fat",
+                                                      style: TextStyle(
+                                                        fontSize: 14.0,
+                                                        color: Colors
+                                                            .grey.shade600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const Divider(
+                                                  color: Colors.grey,
+                                                  thickness: 2,
+                                                  indent: 16,
+                                                  endIndent: 16,
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "${protein}g",
+                                                      style: const TextStyle(
+                                                        fontSize: 15.0,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Color.fromARGB(
+                                                            255, 89, 202, 147),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4.0),
+                                                    Text(
+                                                      "Protein",
+                                                      style: TextStyle(
+                                                        fontSize: 14.0,
+                                                        color: Colors
+                                                            .grey.shade600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const Divider(
+                                                  color: Colors.grey,
+                                                  thickness: 2,
+                                                  indent: 16,
+                                                  endIndent: 16,
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "${carbs}g",
+                                                      style: const TextStyle(
+                                                        fontSize: 15.0,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Color.fromARGB(
+                                                            255, 151, 89, 202),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4.0),
+                                                    Text(
+                                                      "Carbs",
+                                                      style: TextStyle(
+                                                        fontSize: 14.0,
+                                                        color: Colors
+                                                            .grey.shade600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            Stack(
+                                              alignment: Alignment.center,
+                                              children: [
+                                                SizedBox(
+                                                  width: 250,
+                                                  child: SfCircularChart(
+                                                    series: <CircularSeries>[
+                                                      RadialBarSeries<ChartData,
+                                                          String>(
+                                                        onPointTap: (args) {
+                                                          final ChartData
+                                                              tappedData =
+                                                              chartData[args
+                                                                  .pointIndex!];
+                                                          setState(() {
+                                                            selectedDataTitle =
+                                                                tappedData.x;
+                                                            selectedDataValue =
+                                                                tappedData.y;
+                                                          });
+
+                                                          showDialog(
+                                                            context: context,
+                                                            builder:
+                                                                (BuildContext
+                                                                    context) {
+                                                              return AlertDialog(
+                                                                title: Text(
+                                                                    selectedDataTitle),
+                                                                content: Text(
+                                                                    '$selectedDataTitle: ${selectedDataValue}g'),
+                                                                actions: <Widget>[
+                                                                  TextButton(
+                                                                    child:
+                                                                        const Text(
+                                                                            'OK'),
+                                                                    onPressed:
+                                                                        () {
+                                                                      Navigator.of(
+                                                                              context)
+                                                                          .pop();
+                                                                    },
+                                                                  ),
+                                                                ],
+                                                              );
+                                                            },
+                                                          );
+                                                        },
+                                                        dataSource: chartData,
+                                                        xValueMapper:
+                                                            (ChartData data,
+                                                                    _) =>
+                                                                data.x,
+                                                        yValueMapper:
+                                                            (ChartData data,
+                                                                    _) =>
+                                                                data.y,
+                                                        dataLabelSettings:
+                                                            const DataLabelSettings(
+                                                          isVisible: true,
+                                                        ),
+                                                        pointColorMapper:
+                                                            (ChartData data,
+                                                                _) {
+                                                          switch (data.x) {
+                                                            case 'Fat':
+                                                              return Colors
+                                                                  .lightBlueAccent;
+                                                            case 'Protein':
+                                                              return const Color
+                                                                  .fromARGB(255,
+                                                                  89, 202, 147);
+                                                            case 'Carbs':
+                                                              return const Color
+                                                                  .fromARGB(255,
+                                                                  151, 89, 202);
+                                                            default:
+                                                              return Colors
+                                                                  .grey;
+                                                          }
+                                                        },
+                                                        cornerStyle: CornerStyle
+                                                            .bothCurve,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                FloatingActionButton(
+                                                  backgroundColor:
+                                                      secondaryColor,
+                                                  shape: const CircleBorder(),
+                                                  onPressed: () {
+                                                    // Define the action for the button here
+                                                  },
+                                                  child: const Icon(
+                                                    Icons.favorite,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          ],
+                                        ),
+                                        if (_image != null)
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                                25.0), // Rounded image
+                                            child: Image.file(
+                                              _image!,
+                                              fit: BoxFit.cover,
+                                              height: 300, // Image height
+                                              width:
+                                                  double.infinity, // Full width
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 16.0),
-                                  // Nutritional Information Section
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "$calories kcal",
-                                            style: const TextStyle(
-                                              fontSize: 18.0,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors
-                                                  .orangeAccent, // Highlight color
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4.0),
-                                          Text(
-                                            "Calories",
-                                            style: TextStyle(
-                                              fontSize: 14.0,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "$fatPrecentage%",
-                                            style: const TextStyle(
-                                              fontSize: 18.0,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.lightBlueAccent,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4.0),
-                                          Text(
-                                            "Fat",
-                                            style: TextStyle(
-                                              fontSize: 14.0,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "${protein}g",
-                                            style: const TextStyle(
-                                              fontSize: 18.0,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color.fromARGB(
-                                                  255, 89, 202, 147),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4.0),
-                                          Text(
-                                            "Protein",
-                                            style: TextStyle(
-                                              fontSize: 14.0,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "${carbs}g",
-                                            style: const TextStyle(
-                                              fontSize: 18.0,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color.fromARGB(
-                                                  255, 151, 89, 202),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4.0),
-                                          Text(
-                                            "Carbs",
-                                            style: TextStyle(
-                                              fontSize: 14.0,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16.0),
-                                  // Image Display (if available)
-                                  if (_image != null)
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(
-                                          25.0), // Rounded image
-                                      child: Image.file(
-                                        _image!,
-                                        fit: BoxFit.cover,
-                                        height: 300, // Image height
-                                        width: double.infinity, // Full width
-                                      ),
-                                    ),
-                                ],
-                              ),
+                                );
+                              },
                             ),
-                          );
-                        },
+                          ),
+                        ],
                       ),
                     )
 
@@ -401,7 +573,7 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
                                     BoxShadow(
                                       color: Colors.grey.shade300,
                                       blurRadius: 10,
-                                      offset: Offset(0, 5),
+                                      offset: const Offset(0, 5),
                                     ),
                                   ],
                                 ),

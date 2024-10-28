@@ -49,6 +49,9 @@ dependencies:
   vertex_ai: ^0.1.0+1
   stylish_bottom_bar: ^1.1.0
   get: ^4.6.6
+  syncfusion_flutter_charts: ^27.1.56
+
+
   
 
 dev_dependencies:
