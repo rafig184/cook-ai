@@ -475,6 +475,8 @@ class _SavedRecipesState extends State<SavedRecipes> {
                                                   ScaffoldMessenger.of(context)
                                                       .showSnackBar(
                                                           const SnackBar(
+                                                    behavior: SnackBarBehavior
+                                                        .floating,
                                                     content: Text(
                                                         "Copied to Clipboard.."),
                                                   ));

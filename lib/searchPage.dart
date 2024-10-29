@@ -378,6 +378,7 @@ class _SearchPageState extends State<SearchPage> {
       if (db.isFavorite(name)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
+            behavior: SnackBarBehavior.floating,
             content: Text("Recipe is already in favorites.."),
           ),
         );
@@ -385,6 +386,7 @@ class _SearchPageState extends State<SearchPage> {
         db.addFavorite(favorite);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
+            behavior: SnackBarBehavior.floating,
             content: Text("Added to favorites.."),
           ),
         );
@@ -863,6 +865,9 @@ class _SearchPageState extends State<SearchPage> {
                                                                           context)
                                                                   .showSnackBar(
                                                                       const SnackBar(
+                                                                behavior:
+                                                                    SnackBarBehavior
+                                                                        .floating,
                                                                 content: Text(
                                                                     "Copied to Clipboard.."),
                                                               ));

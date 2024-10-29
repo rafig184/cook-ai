@@ -3,6 +3,7 @@ import 'package:cookai/controller/states_controller.dart';
 import 'package:cookai/model/favorites_model.dart';
 import 'package:cookai/saved_recipes.dart';
 import 'package:cookai/searchPage.dart';
+import 'package:cookai/statistics.dart';
 import 'package:cookai/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -26,18 +27,26 @@ class _HomepageState extends State<Homepage> {
     SearchPage(),
     SavedRecipes(),
     CaloriesCalcPage(),
+    Statistics(),
   ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
       _openHiveBox();
+      _openHiveBox1();
     });
   }
 
   Future<void> _openHiveBox() async {
     if (!Hive.isBoxOpen('mybox')) {
       await Hive.openBox<FavoriteData>('mybox');
+    }
+  }
+
+  Future<void> _openHiveBox1() async {
+    if (!Hive.isBoxOpen('mybox1')) {
+      await Hive.openBox<FavoriteData>('mybox1');
     }
   }
 
@@ -102,10 +111,21 @@ class _HomepageState extends State<Homepage> {
                 Navigator.of(context).pop();
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.data_thresholding_rounded),
+              title: const Text(
+                "Statistics",
+                textAlign: TextAlign.right,
+              ),
+              onTap: () {
+                _onItemTapped(3);
+                Navigator.of(context).pop();
+              },
+            ),
             const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 400),
+                SizedBox(height: 300),
                 Text("Version 1.0.3"),
                 Text("Developed by RGDev Ⓒ 2024"),
               ],
@@ -164,6 +184,19 @@ class _HomepageState extends State<Homepage> {
             selectedColor: secondaryColor,
             title: const Text(
               'Calculator',
+              style: TextStyle(fontWeight: FontWeight.w200),
+            ),
+          ),
+          BottomBarItem(
+            icon: const Icon(
+              Icons.data_thresholding_outlined,
+            ),
+            selectedIcon: const Icon(
+              Icons.data_thresholding_rounded,
+            ),
+            selectedColor: secondaryColor,
+            title: const Text(
+              'Stats',
               style: TextStyle(fontWeight: FontWeight.w200),
             ),
           ),

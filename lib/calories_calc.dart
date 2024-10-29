@@ -1,11 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'dart:math';
+import 'package:cookai/database/database.dart';
+import 'package:cookai/database/stats_db.dart';
+import 'package:cookai/model/favorites_model.dart';
+import 'package:cookai/model/stats_model.dart';
 import 'package:cookai/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -35,6 +42,45 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
   String selectedDataTitle = '';
   int selectedDataValue = 0;
   List<ChartData> chartData = [];
+  late StatsDatabase db;
+  int dishId = 0;
+  final Random _random = Random();
+  String dateTime = "";
+
+  @override
+  void generateRandomNumber() {
+    var timestamp = DateTime.now();
+    var formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(timestamp);
+    setState(
+      () {
+        dishId = 1000 + _random.nextInt(9000);
+        dateTime = formattedDate;
+        print(timestamp);
+        print('stats : ${db.savedDishes}');
+      },
+    );
+  }
+
+  void initState() {
+    super.initState();
+    db = StatsDatabase();
+    initializeDatabase();
+    print(db.savedDishes);
+  }
+
+  Future<void> initializeDatabase() async {
+    await Hive.initFlutter();
+    if (!Hive.isBoxOpen('mybox1')) {
+      await Hive.openBox<StatsData>('mybox1');
+    }
+    await db.initialize();
+    if (db.savedDishes.isEmpty) {
+      db.createInitialData();
+    } else {
+      db.loadData();
+    }
+    setState(() {});
+  }
 
   void updateChartData(int index) {
     final result = resultAi[index];
@@ -159,6 +205,36 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
         ],
       ),
     );
+  }
+
+  Future<void> addToStats(
+    String id,
+    String title,
+    String calories,
+    String fat,
+    String protein,
+    String carbs,
+    String date,
+  ) async {
+    final savedDish = StatsData(
+      id: id,
+      title: title,
+      calories: calories,
+      fat: fat,
+      protein: protein,
+      carbs: carbs,
+      date: date,
+    );
+
+    setState(() {
+      db.addStats(savedDish);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Added to Statistics.."),
+        ),
+      );
+    });
   }
 
   @override
@@ -482,7 +558,15 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
                                                       secondaryColor,
                                                   shape: const CircleBorder(),
                                                   onPressed: () {
-                                                    // Define the action for the button here
+                                                    generateRandomNumber();
+                                                    addToStats(
+                                                        dishId.toString(),
+                                                        title,
+                                                        calories,
+                                                        fatInGrams,
+                                                        protein,
+                                                        carbs,
+                                                        dateTime);
                                                   },
                                                   child: const Icon(
                                                     Icons.favorite,

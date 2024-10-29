@@ -1,6 +1,8 @@
 import 'package:cookai/controller/states_controller.dart';
 import 'package:cookai/database/adapter.dart';
+import 'package:cookai/database/stats_adapter.dart';
 import 'package:cookai/model/favorites_model.dart';
+import 'package:cookai/model/stats_model.dart';
 import 'package:cookai/splash.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,8 +16,10 @@ void main() async {
   final appDocumentDir = await path_provider.getApplicationDocumentsDirectory();
   Hive.init(appDocumentDir.path);
   Hive.registerAdapter(FavoriteDataAdapter());
+  Hive.registerAdapter(StatsDataAdapter());
   // await Hive.openBox('mybox');
   await Hive.openBox<FavoriteData>('mybox');
+  await Hive.openBox<StatsData>('mybox1');
   runApp(MyApp());
 }
 
