@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:cookai/database/database.dart';
 import 'package:cookai/database/stats_db.dart';
-import 'package:cookai/model/favorites_model.dart';
 import 'package:cookai/model/stats_model.dart';
 import 'package:cookai/utils/colors.dart';
 import 'package:flutter/material.dart';
@@ -45,16 +43,16 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
   late StatsDatabase db;
   int dishId = 0;
   final Random _random = Random();
-  String dateTime = "";
+  DateTime dateTime = DateTime.now();
 
   @override
   void generateRandomNumber() {
     var timestamp = DateTime.now();
-    var formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(timestamp);
+    // var formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(timestamp);
     setState(
       () {
         dishId = 1000 + _random.nextInt(9000);
-        dateTime = formattedDate;
+        dateTime = timestamp;
         print(timestamp);
         print('stats : ${db.savedDishes}');
       },
@@ -178,6 +176,11 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
       });
     } catch (e) {
       print("Unexpected error: $e");
+      if (e is GenerativeAIException) {
+        showErrorDialog(e.message);
+      } else {
+        showErrorDialog("An unexpected error occurred.");
+      }
       setState(() {
         isAnalyzingImageError = true;
       });
@@ -210,11 +213,11 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
   Future<void> addToStats(
     String id,
     String title,
-    String calories,
-    String fat,
-    String protein,
-    String carbs,
-    String date,
+    int calories,
+    int fat,
+    int protein,
+    int carbs,
+    DateTime date,
   ) async {
     final savedDish = StatsData(
       id: id,
@@ -562,31 +565,56 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
                                                     addToStats(
                                                         dishId.toString(),
                                                         title,
-                                                        calories,
-                                                        fatInGrams,
-                                                        protein,
-                                                        carbs,
+                                                        int.parse(calories),
+                                                        int.parse(fatInGrams),
+                                                        int.parse(protein),
+                                                        int.parse(carbs),
                                                         dateTime);
                                                   },
                                                   child: const Icon(
-                                                    Icons.favorite,
+                                                    Icons.add,
                                                     color: Colors.white,
                                                   ),
                                                 ),
+                                                // Text(
+                                                //   "$calories kcal",
+                                                //   style: const TextStyle(
+                                                //     fontSize: 15.0,
+                                                //     fontWeight: FontWeight.bold,
+                                                //     color: Colors
+                                                //         .orangeAccent, // Highlight color
+                                                //   ),
+                                                // ),
                                               ],
                                             )
                                           ],
                                         ),
+                                        const Align(
+                                          alignment: Alignment.topRight,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                  "Click on + to add to Statistics"),
+                                              SizedBox(
+                                                width: 15,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 15,
+                                        ),
                                         if (_image != null)
                                           ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                                25.0), // Rounded image
+                                            borderRadius:
+                                                BorderRadius.circular(25.0),
                                             child: Image.file(
                                               _image!,
                                               fit: BoxFit.cover,
-                                              height: 300, // Image height
-                                              width:
-                                                  double.infinity, // Full width
+                                              height: 300,
+                                              width: double.infinity,
                                             ),
                                           ),
                                       ],

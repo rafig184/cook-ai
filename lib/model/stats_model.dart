@@ -9,19 +9,19 @@ class StatsData extends HiveObject {
   String title;
 
   @HiveField(2)
-  String calories;
+  int calories; // Change from String to int
 
   @HiveField(3)
-  String fat;
+  int fat; // Change from String to int
 
   @HiveField(4)
-  String protein;
+  int protein; // Change from String to int
 
   @HiveField(5)
-  String carbs;
+  int carbs; // Change from String to int
 
-  @HiveField(5)
-  String date;
+  @HiveField(6)
+  DateTime date;
 
   StatsData({
     required this.id,
