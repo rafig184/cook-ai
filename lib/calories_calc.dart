@@ -10,7 +10,6 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -45,7 +44,6 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
   final Random _random = Random();
   DateTime dateTime = DateTime.now();
 
-  @override
   void generateRandomNumber() {
     var timestamp = DateTime.now();
     // var formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(timestamp);
@@ -59,6 +57,7 @@ class _CaloriesCalcPageState extends State<CaloriesCalcPage> {
     );
   }
 
+  @override
   void initState() {
     super.initState();
     db = StatsDatabase();

@@ -1,6 +1,5 @@
 import 'package:cookai/database/stats_db.dart';
 import 'package:cookai/model/stats_model.dart';
-import 'package:cookai/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
