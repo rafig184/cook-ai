@@ -56,30 +56,35 @@ class StatsDatabase {
   List<ChartData> getCaloriesPerDay() {
     print("savedDishes content: $savedDishes"); // Check savedDishes content
 
+    // Step 1: Sort savedDishes by date in ascending order
+    savedDishes.sort((a, b) => a.date.compareTo(b.date));
+
+    // Step 2: Aggregate calories by formatted date
     Map<String, int> caloriesByDate = {};
     for (var dish in savedDishes) {
-      // Ensure dish.date is a DateTime and dish.calories is an int
       String formattedDate =
-          DateFormat('dd/MM').format(dish.date); // Format the date
+          DateFormat('dd/MM').format(dish.date); // Format date
       if (caloriesByDate.containsKey(formattedDate)) {
-        // If the date already exists, add to the existing calories
         caloriesByDate[formattedDate] =
             (caloriesByDate[formattedDate]! + dish.calories).toInt();
       } else {
-        // If the date doesn't exist, initialize it with the current dish's calories
         caloriesByDate[formattedDate] = dish.calories;
       }
     }
 
-    print("Calories by date: $caloriesByDate"); // Check the caloriesByDate map
+    print("Calories by date (aggregated and sorted): $caloriesByDate");
 
-    // Create a list of _ChartData objects
+    // Step 3: Convert to a list of ChartData
     caloriesPerDay = caloriesByDate.entries
-        .map((entry) => ChartData(entry.key,
-            entry.value.toDouble())) // Use entry.value.toDouble() if needed
+        .map((entry) => ChartData(
+              entry.key,
+              entry.value.toDouble(),
+            ))
         .toList();
 
-    return caloriesPerDay; // Return the list of _ChartData objects
+    print("Calories per day (final sorted list): $caloriesPerDay");
+
+    return caloriesPerDay; // Return the sorted list of ChartData
   }
 
   double getMaxCalories() {

@@ -109,58 +109,64 @@ class _StatisticsState extends State<Statistics> {
                   : db.savedDishes.isNotEmpty
                       ? Column(
                           children: [
-                            SfCartesianChart(
-                              primaryXAxis: const CategoryAxis(),
-                              primaryYAxis: NumericAxis(
-                                minimum: 0,
-                                maximum: db.getMaxCalories(),
-                                interval: 10,
-                              ),
-                              tooltipBehavior: _tooltip,
-                              series: <CartesianSeries<ChartData, String>>[
-                                ColumnSeries<ChartData, String>(
-                                  dataSource: db.caloriesPerDay,
-                                  xValueMapper: (ChartData data, _) => data.x,
-                                  yValueMapper: (ChartData data, _) => data.y,
-                                  name: 'Calories',
-                                  // Use the pointColorMapper to assign colors based on the day or index
-                                  pointColorMapper: (ChartData data, _) {
-                                    // You can define an array of colors
-                                    List<Color> colors = [
-                                      Colors.blue.shade300,
-                                      Colors.green.shade300,
-                                      Colors.red.shade300,
-                                      Colors.orange.shade300,
-                                      Colors.purple.shade300,
-                                      Colors.yellow.shade300,
-                                      Colors.cyan.shade300,
-                                      // Add more colors if you have more days
-                                    ];
-
-                                    // Use the index or some property of data to determine the color
-                                    int index = db.caloriesPerDay.indexOf(data);
-                                    return colors[index %
-                                        colors.length]; // Loop through colors
-                                  },
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(15),
-                                    topRight: Radius.circular(15),
-                                  ),
-                                  width: 0.06,
+                            const Text("Weekly stats per day"),
+                            SizedBox(
+                              height: 250,
+                              child: SfCartesianChart(
+                                primaryXAxis: const CategoryAxis(),
+                                primaryYAxis: NumericAxis(
+                                  minimum: 0,
+                                  maximum: db.getMaxCalories(),
+                                  interval: 50,
                                 ),
-                              ],
+                                tooltipBehavior: _tooltip,
+                                series: <CartesianSeries<ChartData, String>>[
+                                  ColumnSeries<ChartData, String>(
+                                    dataSource: db.caloriesPerDay,
+                                    xValueMapper: (ChartData data, _) => data.x,
+                                    yValueMapper: (ChartData data, _) => data.y,
+                                    name: 'Calories',
+                                    // Use the pointColorMapper to assign colors based on the day or index
+                                    pointColorMapper: (ChartData data, _) {
+                                      // You can define an array of colors
+                                      List<Color> colors = [
+                                        Colors.blue.shade300,
+                                        Colors.green.shade300,
+                                        Colors.red.shade300,
+                                        Colors.orange.shade300,
+                                        Colors.purple.shade300,
+                                        Colors.yellow.shade300,
+                                        Colors.cyan.shade300,
+                                        // Add more colors if you have more days
+                                      ];
+
+                                      // Use the index or some property of data to determine the color
+                                      int index =
+                                          db.caloriesPerDay.indexOf(data);
+                                      return colors[index %
+                                          colors.length]; // Loop through colors
+                                    },
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(15),
+                                      topRight: Radius.circular(15),
+                                    ),
+                                    // width: 1,
+                                  ),
+                                ],
+                              ),
                             ),
                             Text(
                                 "Weekly Calories: ${db.totalWeeklyCalories.map((data) => data.y).join(', ')}"),
                             TextButton(
                                 onPressed: () async {
                                   await db.deleteAllRecipes();
+
                                   setState(() {});
                                 },
                                 child: const Text("Clear all")),
                             ListView.builder(
                               shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
+                              physics: const NeverScrollableScrollPhysics(),
                               itemCount: db.savedDishes.length,
                               itemBuilder: (context, index) {
                                 final data = db.savedDishes[index];
@@ -170,6 +176,8 @@ class _StatisticsState extends State<Statistics> {
                                     icon: const Icon(Icons.delete),
                                     onPressed: () async {
                                       await db.deleteSelectedDish(data);
+                                      db.getCaloriesPerDay();
+                                      db.getWeeklyCalories();
                                       setState(() {});
                                     },
                                   ),
