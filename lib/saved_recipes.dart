@@ -259,7 +259,7 @@ class _SavedRecipesState extends State<SavedRecipes> {
                     const Padding(
                       padding: EdgeInsets.only(left: 15),
                       child: Text(
-                        "Saved Recipes",
+                        "Favorite Recipes",
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.w500),
                       ),

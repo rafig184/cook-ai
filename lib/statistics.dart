@@ -1,11 +1,13 @@
 import 'package:cookai/database/stats_db.dart';
 import 'package:cookai/model/stats_model.dart';
+import 'package:cookai/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import 'model/chart_class.dart';
 
@@ -15,6 +17,8 @@ class Statistics extends StatefulWidget {
   @override
   State<Statistics> createState() => _StatisticsState();
 }
+
+enum Filter { lastWeek, lastMonth, selectedDay }
 
 class _ChartData {
   _ChartData(this.x, this.y);
@@ -27,6 +31,12 @@ class _StatisticsState extends State<Statistics> {
   late StatsDatabase db;
   bool isLoading = false;
   late TooltipBehavior _tooltip;
+  Filter selectedFilter = Filter.lastWeek;
+  bool isSelectedWeekly = true;
+  bool isSelectedMonthly = false;
+  bool isFilterVisible = false;
+  bool isFilterSelected = false;
+  String _selectedDate = "";
 
   @override
   void initState() {
@@ -52,7 +62,10 @@ class _StatisticsState extends State<Statistics> {
       }
       db.savedDishes.sort((a, b) => b.date.compareTo(a.date));
       db.getCaloriesPerDay();
-      db.getWeeklyCalories();
+      db.getWeeklyCaloriesLast30Days();
+      db.getLast7DaysCalories();
+      db.getMonthlyCaloriesLast30Days();
+
       print("caloriesperday : ${db.caloriesPerDay}");
       setState(() {});
       print(db.savedDishes);
@@ -66,6 +79,90 @@ class _StatisticsState extends State<Statistics> {
   String formatDate(DateTime date) {
     return DateFormat('dd/MM/yy HH:mm').format(date);
   }
+
+  void _onSelectionChanged(DateRangePickerSelectionChangedArgs args) {
+    setState(() {
+      if (args.value is DateTime) {
+        var date = args.value as DateTime;
+        _selectedDate = DateFormat('dd/MM/yy').format(date).toString();
+        print("Selected Date: $_selectedDate");
+        db.loadDataPerDay(date); // Pass the DateTime directly to loadDataPerDay
+      }
+      isFilterSelected = true;
+    });
+  }
+
+  // Future<void> deleteAllDialog() async {
+  //   return showDialog<void>(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (BuildContext context) {
+  //       return Directionality(
+  //         textDirection: TextDirection.ltr,
+  //         child: StatefulBuilder(
+  //           builder: (BuildContext context, StateSetter setState) {
+  //             return Dialog(
+  //               shape: RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.circular(10),
+  //               ),
+  //               child: Container(
+  //                 padding: const EdgeInsets.all(16),
+  //                 child: Column(
+  //                   mainAxisSize: MainAxisSize.min,
+  //                   crossAxisAlignment: CrossAxisAlignment.stretch,
+  //                   children: <Widget>[
+  //                     const Text(
+  //                       "Are you sure that you want to delete all the saved dishes?",
+  //                       textAlign: TextAlign.center,
+  //                       style: TextStyle(
+  //                         fontSize: 16,
+  //                       ),
+  //                     ),
+  //                     const SizedBox(height: 10),
+  //                     Row(
+  //                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //                       children: [
+  //                         TextButton(
+  //                           onPressed: () async {
+  //                             await db.deleteAllRecipes();
+  //                             setState(() {
+  //                               isSearch = false;
+  //                             });
+  //                             Navigator.of(context).pop();
+  //                             setState(() {});
+  //                           },
+  //                           child: const Text(
+  //                             "Yes",
+  //                             style: TextStyle(
+  //                                 color: primaryColor,
+  //                                 fontSize: 17,
+  //                                 fontWeight: FontWeight.w400),
+  //                           ),
+  //                         ),
+  //                         TextButton(
+  //                           onPressed: () async {
+  //                             Navigator.of(context).pop();
+  //                           },
+  //                           child: const Text(
+  //                             "No",
+  //                             style: TextStyle(
+  //                                 color: primaryColor,
+  //                                 fontSize: 17,
+  //                                 fontWeight: FontWeight.w400),
+  //                           ),
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             );
+  //           },
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -108,20 +205,142 @@ class _StatisticsState extends State<Statistics> {
                   : db.savedDishes.isNotEmpty
                       ? Column(
                           children: [
-                            const Text("Weekly stats per day"),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: SizedBox(
+                                height: 40,
+                                child: SegmentedButton<Filter>(
+                                    showSelectedIcon: false,
+                                    style: SegmentedButton.styleFrom(
+                                      // maximumSize: const Size(double.infinity, 15),
+
+                                      backgroundColor: Colors.grey.shade200,
+                                      foregroundColor: primaryColor,
+                                      selectedForegroundColor: Colors.white,
+                                      selectedBackgroundColor: primaryColor,
+                                      side: BorderSide.none,
+                                    ),
+                                    segments: const <ButtonSegment<Filter>>[
+                                      ButtonSegment<Filter>(
+                                        value: Filter.lastWeek,
+                                        label: Text(
+                                          'Last 7 days',
+                                          style: TextStyle(height: -0.6),
+                                        ),
+                                      ),
+                                      ButtonSegment<Filter>(
+                                        value: Filter.lastMonth,
+                                        label: Text(
+                                          'Last 30 days',
+                                          style: TextStyle(height: -0.6),
+                                        ),
+                                      ),
+                                      ButtonSegment<Filter>(
+                                        value: Filter.selectedDay,
+                                        label: Text(
+                                          'Select day',
+                                          style: TextStyle(height: -0.6),
+                                        ),
+                                      ),
+                                    ],
+                                    selected: <Filter>{selectedFilter},
+                                    onSelectionChanged:
+                                        (Set<Filter> newSelection) {
+                                      setState(() {
+                                        selectedFilter = newSelection.first;
+                                        if (selectedFilter ==
+                                            Filter.lastMonth) {
+                                          db.getWeeklyCaloriesLast30Days();
+                                          db.getMonthlyCaloriesLast30Days();
+                                          isSelectedWeekly = false;
+                                          isSelectedMonthly = true;
+                                          isFilterVisible = false;
+                                          isFilterSelected = false;
+                                          db.totalDayCalories = 0;
+                                          db.selectedDayCalories = [];
+                                        } else if (selectedFilter ==
+                                            Filter.lastWeek) {
+                                          db.getLast7DaysCalories();
+                                          isSelectedMonthly = false;
+                                          isSelectedWeekly = true;
+                                          isFilterVisible = false;
+                                          isFilterSelected = false;
+                                          db.totalDayCalories = 0;
+                                          db.selectedDayCalories = [];
+                                        } else if (selectedFilter ==
+                                            Filter.selectedDay) {
+                                          if (isFilterVisible == false) {
+                                            isFilterVisible = true;
+                                            isSelectedWeekly = false;
+                                            isSelectedMonthly = false;
+                                            db.loadDataPerDay(DateTime.now());
+                                          } else {
+                                            isFilterVisible = false;
+                                            isFilterSelected = false;
+                                          }
+                                          setState(() {});
+                                        }
+                                      });
+                                    }),
+                              ),
+                            ),
+                            isFilterVisible
+                                ? SfDateRangePicker(
+                                    minDate: db.getFirstDate(),
+                                    maxDate: db.getLastDate(),
+                                    selectionColor: primaryColor,
+                                    todayHighlightColor: primaryColor,
+                                    initialSelectedDate: DateTime.now(),
+                                    headerStyle:
+                                        const DateRangePickerHeaderStyle(
+                                      backgroundColor:
+                                          Color.fromRGBO(238, 238, 238, 1),
+                                    ),
+                                    backgroundColor:
+                                        const Color.fromRGBO(238, 238, 238, 1),
+                                    onSelectionChanged: _onSelectionChanged,
+                                    selectionMode:
+                                        DateRangePickerSelectionMode.single,
+                                  )
+                                : Container(),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            isSelectedWeekly
+                                ? const Text("Weekly stats per day")
+                                : isSelectedMonthly
+                                    ? const Text("Montly stats per week")
+                                    : isFilterVisible
+                                        ? const Text("Selected day stats")
+                                        : Container(),
                             SizedBox(
                               height: 250,
                               child: SfCartesianChart(
-                                primaryXAxis: const CategoryAxis(),
+                                primaryXAxis: const CategoryAxis(
+                                  labelIntersectAction:
+                                      AxisLabelIntersectAction.trim,
+                                ),
                                 primaryYAxis: NumericAxis(
                                   minimum: 0,
-                                  maximum: db.getMaxCalories(),
+                                  maximum: isSelectedWeekly
+                                      ? db.getMaxCaloriesPerDay()
+                                      : isSelectedMonthly
+                                          ? db.getMaxCaloriesPerWeek()
+                                          : isFilterVisible
+                                              ? db.getMaxCaloriesPerSpecificDay()
+                                              : db.getMaxCaloriesPerSpecificDay(),
                                   interval: 50,
                                 ),
                                 tooltipBehavior: _tooltip,
                                 series: <CartesianSeries<ChartData, String>>[
                                   ColumnSeries<ChartData, String>(
-                                    dataSource: db.caloriesPerDay,
+                                    dataSource: isSelectedWeekly
+                                        ? db.caloriesPerDay
+                                        : isSelectedMonthly
+                                            ? db.caloriesPerWeek
+                                            : isFilterSelected
+                                                ? db.dishesPerDay
+                                                : db.dishesPerDay,
                                     xValueMapper: (ChartData data, _) => data.x,
                                     yValueMapper: (ChartData data, _) => data.y,
                                     name: 'Calories',
@@ -140,8 +359,15 @@ class _StatisticsState extends State<Statistics> {
                                       ];
 
                                       // Use the index or some property of data to determine the color
-                                      int index =
-                                          db.caloriesPerDay.indexOf(data);
+                                      int index = isSelectedWeekly
+                                          ? db.caloriesPerDay.indexOf(data)
+                                          : isSelectedMonthly
+                                              ? db.caloriesPerWeek.indexOf(data)
+                                              : isFilterVisible
+                                                  ? db.dishesPerDay
+                                                      .indexOf(data)
+                                                  : db.dishesPerDay
+                                                      .indexOf(data);
                                       return colors[index %
                                           colors.length]; // Loop through colors
                                     },
@@ -154,21 +380,51 @@ class _StatisticsState extends State<Statistics> {
                                 ],
                               ),
                             ),
-                            Text(
-                                "Weekly Calories: ${db.totalWeeklyCalories.map((data) => data.y).join(', ')}"),
-                            TextButton(
-                                onPressed: () async {
-                                  await db.deleteAllRecipes();
+                            isSelectedWeekly
+                                ? Text(
+                                    "Weekly Calories: ${db.totalLast7DaysCalories}")
+                                : isSelectedMonthly
+                                    ? Text(
+                                        "Montly Calories : ${db.totalLast30DaysCalories}")
+                                    : isFilterVisible
+                                        ? Text(
+                                            "Total selected day calories : ${db.totalDayCalories}")
+                                        : Container(),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(right: 15, left: 15),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TextButton(
+                                      onPressed: () async {
+                                        await db.deleteAllRecipes();
 
-                                  setState(() {});
-                                },
-                                child: const Text("Clear all")),
+                                        setState(() {});
+                                      },
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.delete_forever_rounded),
+                                          SizedBox(
+                                            width: 7,
+                                          ),
+                                          Text("Clear all"),
+                                        ],
+                                      )),
+                                ],
+                              ),
+                            ),
                             ListView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount: db.savedDishes.length,
+                              itemCount: isFilterSelected
+                                  ? db.savedDishesByDate.length
+                                  : db.savedDishes.length,
                               itemBuilder: (context, index) {
-                                final data = db.savedDishes[index];
+                                final data = isFilterSelected
+                                    ? db.savedDishesByDate[index]
+                                    : db.savedDishes[index];
 
                                 return ExpansionTile(
                                   leading: IconButton(
@@ -176,7 +432,9 @@ class _StatisticsState extends State<Statistics> {
                                     onPressed: () async {
                                       await db.deleteSelectedDish(data);
                                       db.getCaloriesPerDay();
-                                      db.getWeeklyCalories();
+                                      db.getLast7DaysCalories();
+                                      db.getWeeklyCaloriesLast30Days();
+                                      db.savedDishesByDate;
                                       setState(() {});
                                     },
                                   ),
