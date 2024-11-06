@@ -92,77 +92,72 @@ class _StatisticsState extends State<Statistics> {
     });
   }
 
-  // Future<void> deleteAllDialog() async {
-  //   return showDialog<void>(
-  //     context: context,
-  //     barrierDismissible: false,
-  //     builder: (BuildContext context) {
-  //       return Directionality(
-  //         textDirection: TextDirection.ltr,
-  //         child: StatefulBuilder(
-  //           builder: (BuildContext context, StateSetter setState) {
-  //             return Dialog(
-  //               shape: RoundedRectangleBorder(
-  //                 borderRadius: BorderRadius.circular(10),
-  //               ),
-  //               child: Container(
-  //                 padding: const EdgeInsets.all(16),
-  //                 child: Column(
-  //                   mainAxisSize: MainAxisSize.min,
-  //                   crossAxisAlignment: CrossAxisAlignment.stretch,
-  //                   children: <Widget>[
-  //                     const Text(
-  //                       "Are you sure that you want to delete all the saved dishes?",
-  //                       textAlign: TextAlign.center,
-  //                       style: TextStyle(
-  //                         fontSize: 16,
-  //                       ),
-  //                     ),
-  //                     const SizedBox(height: 10),
-  //                     Row(
-  //                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                       children: [
-  //                         TextButton(
-  //                           onPressed: () async {
-  //                             await db.deleteAllRecipes();
-  //                             setState(() {
-  //                               isSearch = false;
-  //                             });
-  //                             Navigator.of(context).pop();
-  //                             setState(() {});
-  //                           },
-  //                           child: const Text(
-  //                             "Yes",
-  //                             style: TextStyle(
-  //                                 color: primaryColor,
-  //                                 fontSize: 17,
-  //                                 fontWeight: FontWeight.w400),
-  //                           ),
-  //                         ),
-  //                         TextButton(
-  //                           onPressed: () async {
-  //                             Navigator.of(context).pop();
-  //                           },
-  //                           child: const Text(
-  //                             "No",
-  //                             style: TextStyle(
-  //                                 color: primaryColor,
-  //                                 fontSize: 17,
-  //                                 fontWeight: FontWeight.w400),
-  //                           ),
-  //                         ),
-  //                       ],
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //             );
-  //           },
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
+  Future<void> deleteAllDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    const Text(
+                      "Are you sure that you want to delete all the saved dishes?",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton(
+                          onPressed: () async {
+                            await db.deleteAllStats();
+                            setState(() {});
+                            Navigator.of(context).pop();
+                            setState(() {});
+                          },
+                          child: const Text(
+                            "Yes",
+                            style: TextStyle(
+                                color: primaryColor,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w400),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            "No",
+                            style: TextStyle(
+                                color: primaryColor,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w400),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -335,7 +330,7 @@ class _StatisticsState extends State<Statistics> {
                                 series: <CartesianSeries<ChartData, String>>[
                                   ColumnSeries<ChartData, String>(
                                     dataSource: isSelectedWeekly
-                                        ? db.caloriesPerDay
+                                        ? db.sevenDaysdata
                                         : isSelectedMonthly
                                             ? db.caloriesPerWeek
                                             : isFilterSelected
@@ -360,7 +355,7 @@ class _StatisticsState extends State<Statistics> {
 
                                       // Use the index or some property of data to determine the color
                                       int index = isSelectedWeekly
-                                          ? db.caloriesPerDay.indexOf(data)
+                                          ? db.sevenDaysdata.indexOf(data)
                                           : isSelectedMonthly
                                               ? db.caloriesPerWeek.indexOf(data)
                                               : isFilterVisible
@@ -398,8 +393,8 @@ class _StatisticsState extends State<Statistics> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   TextButton(
-                                      onPressed: () async {
-                                        await db.deleteAllRecipes();
+                                      onPressed: () {
+                                        deleteAllDialog();
 
                                         setState(() {});
                                       },
@@ -416,6 +411,7 @@ class _StatisticsState extends State<Statistics> {
                               ),
                             ),
                             ListView.builder(
+                              reverse: true,
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: isFilterSelected

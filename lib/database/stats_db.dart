@@ -16,6 +16,7 @@ class StatsDatabase {
   List<ChartData> caloriesPerWeek = [];
   List<ChartData> selectedDayCalories = [];
   List<ChartData> dishesPerDay = [];
+  List<ChartData> sevenDaysdata = [];
 
   // final Box<FavoriteData> _myBox = Hive.box<FavoriteData>('mybox');
   // final _myBox = Hive.box('mybox');
@@ -56,8 +57,7 @@ class StatsDatabase {
     _myBox.delete(dish.id);
   }
 
-  Future<void> deleteAllRecipes() async {
-    // Assuming favoriteGifIds is a list of keys
+  Future<void> deleteAllStats() async {
     await _myBox.clear();
     savedDishes.clear();
   }
@@ -141,9 +141,9 @@ class StatsDatabase {
   }
 
   double getMaxCaloriesPerDay() {
-    if (caloriesPerDay.isEmpty) return 0;
+    if (sevenDaysdata.isEmpty) return 0;
 
-    return caloriesPerDay
+    return sevenDaysdata
         .map((data) =>
             data.y) // Access the y value (calories) for each ChartData entry
         .reduce((a, b) => a > b ? a : b);
@@ -166,35 +166,6 @@ class StatsDatabase {
             data.y) // Access the y value (calories) for each ChartData entry
         .reduce((a, b) => a > b ? a : b);
   }
-
-  // List<Map<String, dynamic>> getWeeklyCalories() {
-  //   // Map to store total calories for each week with the key "Week X - Month"
-  //   Map<String, double> caloriesByWeek = {};
-
-  //   for (var dish in savedDishes) {
-  //     // Calculate the week number within the month for each dish date
-  //     int weekOfMonth = ((dish.date.day - 1) ~/ 7) + 1;
-  //     String monthName = DateFormat('MMMM').format(dish.date);
-
-  //     // Format the week key as "Week X - Month"
-  //     String weekKey = "Week $weekOfMonth - $monthName";
-
-  //     // Sum calories for each week
-  //     if (caloriesByWeek.containsKey(weekKey)) {
-  //       caloriesByWeek[weekKey] = caloriesByWeek[weekKey]! + dish.calories;
-  //     } else {
-  //       caloriesByWeek[weekKey] = dish.calories.toDouble();
-  //     }
-  //   }
-
-  //   // Convert the map to a list of maps with 'week' and 'calories' keys
-  //   List<Map<String, dynamic>> weeklyCalories = caloriesByWeek.entries
-  //       .map((entry) => {'week': entry.key, 'calories': entry.value})
-  //       .toList();
-
-  //   print("Weekly Calories: $weeklyCalories");
-  //   return weeklyCalories;
-  // }
 
   Map<String, double> getWeeklyCaloriesLast30Days() {
     // Get the date 30 days before today
@@ -238,7 +209,7 @@ class StatsDatabase {
 
   List<ChartData> getLast7DaysCalories() {
     final now = DateTime.now();
-    final sevenDaysAgo = now.subtract(Duration(days: 7));
+    final sevenDaysAgo = now.subtract(Duration(days: 6));
 
     // Filter the entries to include only those within the last 7 days
     Map<String, double> caloriesByDay = {};
@@ -274,7 +245,9 @@ class StatsDatabase {
 
     totalLast7DaysCalories = totalWeeklyCalories;
 
-    return last7DaysCalories;
+    sevenDaysdata = last7DaysCalories;
+
+    return sevenDaysdata;
   }
 
   List<double> getMonthlyCaloriesLast30Days() {
